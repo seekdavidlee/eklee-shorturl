@@ -1,0 +1,65 @@
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+  workflow_dispatch:
+    inputs:
+      environmentselector:
+        description: 'Environment selector'
+        required: false
+        default: 'default'
+env:
+  RESOURCE_GROUP_NAME: 'shorturl'
+
+jobs:
+  setup:
+    name: Choose Secrets Environment Job
+    runs-on: windows-latest
+    steps:
+      - id: setup
+        name: Setup Environment Setp
+        run: |
+          $envSelector = "${{ github.event.inputs.environmentselector }}"
+          Write-Host "Environment Selector: $envSelector Branch ${{ github.ref }}"
+          if ($envSelector -eq '' -or $envSelector -eq 'default') {            
+            if ('${{ github.ref }}' -eq 'refs/heads/main') { 
+              echo "::set-output name=build_env::prod"              
+            } else {
+              echo "::set-output name=build_env::dev"              
+            }
+          } else {
+            echo "::set-output name=build_env::$envSelector"            
+          }
+    outputs:
+      build_env: ${{ steps.setup.outputs.build_env }}
+
+  cd_deploy:
+    name: Deploy Azure Environment
+    needs: setup
+    environment: ${{ needs.setup.outputs.build_env }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Azure CLI Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+
+      - name: Build azure environment
+        id: build_az_env
+        uses: azure/arm-deploy@v1
+        with:
+          deploymentName: 'deploy-${{ needs.setup.outputs.build_env }}-${{ github.run_number }}'
+          resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
+          template: ./deployment/deploy.bicep
+          parameters: >
+            prefix=${{ secrets.PREFIX }}
+            appEnvironment=${{ needs.setup.outputs.build_env }}
+            location=${{ secrets.LOCATION }}
+            urlStorageConnection=${{ secrets.URLSTORAGECONNECTION }}    
+
+      - id: deploy
+        name: Deploy code
+        run: .\Deployment\Deploy.ps1 -ResourceGroupName ${{ env.RESOURCE_GROUP_NAME }} -AppName ${{ steps.build_az_env.outputs.funcName }}
