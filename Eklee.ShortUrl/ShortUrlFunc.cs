@@ -38,6 +38,15 @@ namespace Eklee.ShortUrl
                     }
                 }
 
+                var queryStrings = req.GetQueryParameterDictionary();
+                if (queryStrings.TryGetValue("action", out var action))
+                {
+                    if (action == "lookup")
+                    {
+                        return new JsonResult(new { entity.Url });
+                    }
+                }
+
                 return new RedirectResult(entity.Url);
             }
 
