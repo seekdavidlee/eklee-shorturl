@@ -1,4 +1,4 @@
-param($certName, $email, $buildEnv)
+param([Parameter(mandatory = $true)]$certName, [Parameter(mandatory = $true)]$email, [Parameter(mandatory = $true)]$buildEnv)
 
 $groups = az group list --tag stack-name=shorturl | ConvertFrom-Json
 if ($groups.Length -eq 0) {
