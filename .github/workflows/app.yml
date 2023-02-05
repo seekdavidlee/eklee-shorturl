@@ -58,7 +58,8 @@ jobs:
             prefix=${{ secrets.PREFIX }}
             appEnvironment=${{ needs.setup.outputs.build_env }}
             location=${{ secrets.LOCATION }}
-            urlStorageConnection=${{ secrets.URLSTORAGECONNECTION }}    
+            urlStorageConnection=${{ secrets.URLSTORAGECONNECTION }}
+            apiKey=${{ secrets.APIKEY }}
 
       - id: deploy
         name: Deploy code

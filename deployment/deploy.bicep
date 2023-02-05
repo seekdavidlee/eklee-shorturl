@@ -3,6 +3,8 @@ param appEnvironment string
 param location string
 @secure()
 param urlStorageConnection string
+@secure()
+param apiKey string
 
 var stackName = '${prefix}${appEnvironment}'
 
@@ -84,6 +86,10 @@ resource funcapp 'Microsoft.Web/sites@2022-03-01' = {
           name: 'UrlStorageConnection'
           value: urlStorageConnection
         }
+        {
+          name: 'API_KEY'
+          value: apiKey
+        }        
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
           value: 'dotnet'
