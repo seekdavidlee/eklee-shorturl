@@ -1,5 +1,6 @@
 ﻿using Eklee.ShortUrl;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,5 +14,9 @@ public class Startup : FunctionsStartup
         var configBuilder = new ConfigurationBuilder().AddEnvironmentVariables();
         IConfiguration configuration = configBuilder.Build();
         builder.Services.AddSingleton(configuration);
+        builder.Services.Configure<HttpOptions>(config =>
+        {
+            config.RoutePrefix = string.Empty;
+        });
     }
 }
