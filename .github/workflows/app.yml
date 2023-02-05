@@ -55,11 +55,11 @@ jobs:
           resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
           template: ./deployment/deploy.bicep
           parameters: >
-            prefix=${{ secrets.PREFIX }}
-            appEnvironment=${{ needs.setup.outputs.build_env }}
-            location=${{ secrets.LOCATION }}
+            prefix=${{ vars.PREFIX }}
+            appEnvironment=${{ needs.setup.outputs.build_env }}            
             urlStorageConnection=${{ secrets.URLSTORAGECONNECTION }}
             apiKey=${{ secrets.APIKEY }}
+            allowedIPList=${{ vars.ALLOWEDIPLIST }}
 
       - id: deploy
         name: Deploy code

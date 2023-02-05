@@ -1,10 +1,11 @@
 param prefix string
 param appEnvironment string
-param location string
+param location string = resourceGroup().location
 @secure()
 param urlStorageConnection string
 @secure()
 param apiKey string
+param allowedIPList string
 
 var stackName = '${prefix}${appEnvironment}'
 
@@ -89,7 +90,11 @@ resource funcapp 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'API_KEY'
           value: apiKey
-        }        
+        }
+        {
+          name: 'ALLOWED_IP_LIST'
+          value: allowedIPList
+        }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
           value: 'dotnet'
