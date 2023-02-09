@@ -1,5 +1,5 @@
 # ShortUrl
-ShortUrl is a Url shortner service that runs on Azure Function HTTP Trigger. You can host your this service with your own domain name. This allows you to share URL with friends and family. 
+ShortUrl is a HTTP redirection service that runs as an Azure Function HTTP Trigger. You can host your this service with your own domain name. This allows you to share your host URL with a friendly id with your friends and family from which they can be redirected to. The id you pick should be something short and simple. For exampe, you can may have a URL on your domain such as https://mydomain.com/hotel and this may redirect to https://www.somehotel.com/bookings/reservation/1234566. You or your friends and family just have to know your domain name and you can provide just a simple id and off they go.
 
 To create a short url, you will first need to submit a HTTP POST with the following payload to your domain with a Id.
 
