@@ -1,8 +1,12 @@
 ﻿using Eklee.ShortUrl;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
+using System;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 namespace Eklee.ShortUrl;
@@ -17,6 +21,24 @@ public class Startup : FunctionsStartup
         builder.Services.Configure<HttpOptions>(config =>
         {
             config.RoutePrefix = string.Empty;
+        }).AddSingleton<IOpenApiConfigurationOptions>(_ =>
+        {
+            var options = new OpenApiConfigurationOptions()
+            {
+                Info = new OpenApiInfo()
+                {
+                    Version = "1.0",
+                    Title = "Short Url Service",
+                    Description = "Host your very own short url on Azure using Azure Functions.",
+                    License = new OpenApiLicense()
+                    {
+                        Name = "MIT",
+                        Url = new Uri("http://opensource.org/licenses/MIT"),
+                    }
+                },
+            };
+
+            return options;
         });
     }
 }
