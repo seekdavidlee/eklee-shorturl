@@ -51,3 +51,5 @@ Your Azure Credential should look like the following:
 
 1. You can ensure only you can access the URL by configuring AllowedIPList which is a comma-deliminated IP list.
 2. If you don't want to do a redirect and just want to lookup a key, just add a querystring ```?action=lookup```.
+3. Swagger doc is included. Navigate to /swagger to view the API documentation. As you may already tell, the word "swagger" cannot be used as a id.
+4. You can add additional words to be banned as id. Create a configuration named BannedList and add all the words into a comma-deliminated list as the value.
