@@ -31,6 +31,14 @@ public class ShortUrlFunc
         };
     }
 
+    [OpenApiIgnore]
+    [FunctionName(nameof(SwaggerUiRoute))]
+    public IActionResult SwaggerUiRoute(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "swagger")] HttpRequest req)
+    {
+        return new RedirectResult("/swagger/ui");
+    }
+
     [OpenApiOperation(operationId: nameof(GetShortUrl), Summary = "Gets the url.", Description = "This API call will return your url based on a key provided.", Visibility = OpenApiVisibilityType.Important)]
     [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(string), Summary = "The key.", Description = "The key to the URL.", Visibility = OpenApiVisibilityType.Important)]
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.Redirect, contentType: "text/plain", bodyType: typeof(string), Summary = "Redirection URL.", Description = "The response will redirect the browser to the intended URL.")]
@@ -38,9 +46,9 @@ public class ShortUrlFunc
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Unauthorized, Summary = "If the key is found but there is an IP restriction.", Description = "The response will return a Forbidden if your IP does not match the expected IP address.")]
     [FunctionName(nameof(GetShortUrl))]
     public async Task<IActionResult> GetShortUrl(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "{id:regex((^| )(?!swagger)[^ ]*)}")] HttpRequest req,
-        [Table("Url", Connection = "UrlStorageConnection")] TableClient tableClient,
-        string id, CancellationToken cancellationToken)
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "{id:regex((^| )(?!swagger)[^ ]*)}")] HttpRequest req,
+    [Table("Url", Connection = "UrlStorageConnection")] TableClient tableClient,
+    string id, CancellationToken cancellationToken)
     {
         AsyncPageable<UrlEntity> queryResults = tableClient.QueryAsync<UrlEntity>(filter: $"PartitionKey eq 'common' and RowKey eq '{id}'", cancellationToken: cancellationToken);
         await foreach (UrlEntity entity in queryResults)
