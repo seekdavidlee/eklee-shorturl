@@ -97,6 +97,8 @@ public class ShortUrlFunc
         {
             var dto = JsonSerializer.Deserialize<UrlRequest>(req.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
+            new Uri(dto.Url);
+
             await tableClient.UpsertEntityAsync(new UrlEntity
             {
                 RowKey = id,
@@ -106,6 +108,10 @@ public class ShortUrlFunc
             });
 
             return new OkResult();
+        }
+        catch (UriFormatException)
+        {
+            return new BadRequestObjectResult(new { errorMessage = "Url is invalid." });
         }
         catch (JsonException jsonEx)
         {
