@@ -54,6 +54,7 @@ jobs:
           deploymentName: 'deploy-${{ needs.setup.outputs.build_env }}-${{ github.run_number }}'
           resourceGroupName: ${{ env.RESOURCE_GROUP_NAME }}
           template: ./deployment/deploy.bicep
+          failOnStdErr: false
           parameters: >
             prefix=${{ vars.PREFIX }}
             appEnvironment=${{ needs.setup.outputs.build_env }}            
