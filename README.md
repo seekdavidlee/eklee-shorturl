@@ -53,3 +53,32 @@ Your Azure Credential should look like the following:
 2. If you don't want to do a redirect and just want to lookup a key, just add a querystring ```?action=lookup```.
 3. Swagger doc is included. Navigate to /swagger to view the API documentation. As you may already tell, the word "swagger" cannot be used as a id.
 4. You can add additional words to be banned as id. Create a configuration named BannedList and add all the words into a comma-deliminated list as the value.
+
+## Performance Test
+
+To run performance testing, you can review the code at Eklee.ShortUrl.LoadTester. It uses [NBomber](https://www.nuget.org/packages/NBomber/). The following parameters need to be configured in launch settings.
+
+```
+{
+	"profiles": {
+		"Eklee.ShortUrl.LoadTester": {
+			"commandName": "Project",
+			"environmentVariables": {
+				"X_URL": "<URL GOES HERE>",
+				"X_RATE": "20",
+				"X_INTERVAL_IN_SECONDS": "1",
+				"X_DURATION_IN_MINS": "1",
+				"X_API_KEY": "<API KEY GOES HERE>"
+			}
+		}
+	}
+}
+```
+
+Run the following:
+
+```
+dotnet run --launch-profile Eklee.ShortUrl.LoadTester
+```
+
+Once the test is completed, you should find results in a folder called Reports.

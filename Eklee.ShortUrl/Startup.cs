@@ -29,7 +29,7 @@ public class Startup : FunctionsStartup
                 {
                     Version = "1.0",
                     Title = "Short Url Service",
-                    Description = "Host your very own short url on Azure using Azure Functions.",
+                    Description = "Host your very own URL redirection service using Azure Functions.",
                     License = new OpenApiLicense()
                     {
                         Name = "MIT",

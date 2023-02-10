@@ -103,7 +103,7 @@ public class ShortUrlFunc
 
         try
         {
-            var dto = JsonSerializer.Deserialize<UrlRequest>(req.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var dto = await JsonSerializer.DeserializeAsync<UrlRequest>(req.Body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             new Uri(dto.Url);
 
