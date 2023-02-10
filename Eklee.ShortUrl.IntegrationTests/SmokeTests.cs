@@ -11,7 +11,14 @@ public class SmokeTests
         var clientHandler = new HttpClientHandler { AllowAutoRedirect = false };
         using var httpClient = new HttpClient(clientHandler);
         httpClient.BaseAddress = new Uri(Environment.GetEnvironmentVariable("X_URL"));
-        httpClient.DefaultRequestHeaders.Add("API_KEY", Environment.GetEnvironmentVariable("X_API_KEY"));
+        var apiKey = Environment.GetEnvironmentVariable("X_API_KEY");
+
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            throw new ArgumentNullException(nameof(apiKey));
+        }
+
+        httpClient.DefaultRequestHeaders.Add("API_KEY", apiKey);
 
         var id = $"B1230";
         string url = $"https://{Guid.NewGuid():N}.com";
