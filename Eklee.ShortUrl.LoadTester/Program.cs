@@ -1,4 +1,5 @@
-﻿using NBomber.CSharp;
+﻿using NBomber.Contracts;
+using NBomber.CSharp;
 using System.Net.Http.Json;
 
 int rate = int.Parse(Environment.GetEnvironmentVariable("X_RATE"));
@@ -10,44 +11,52 @@ using var httpClient = new HttpClient(clientHandler);
 httpClient.BaseAddress = new Uri(Environment.GetEnvironmentVariable("X_URL"));
 httpClient.DefaultRequestHeaders.Add("API_KEY", Environment.GetEnvironmentVariable("X_API_KEY"));
 
-var id = "A1234";
-string url = $"https://{Guid.NewGuid():N}.com";
-
-var getRedirects = Scenario.Create("get_redirects", async context =>
+ScenarioProps[] list = new ScenarioProps[3];
+for (int i = 0; i < list.Length; i++)
 {
-    try
+    var id = $"A123{i}";
+    string url = $"https://{Guid.NewGuid():N}.com";
+
+    var getRedirects = Scenario.Create($"get_redirects_{i}", async context =>
     {
-        var response = await httpClient.GetAsync(id);
-        if (response.StatusCode.Equals(System.Net.HttpStatusCode.Found) &&
-            response.Headers.Location != null &&
-            response.Headers.Location.ToString().StartsWith(url))
+        try
         {
-            return Response.Ok(response);
+            var response = await httpClient.GetAsync(id);
+            if (response.StatusCode.Equals(System.Net.HttpStatusCode.Found) &&
+                response.Headers.Location != null &&
+                response.Headers.Location.ToString().StartsWith(url))
+            {
+                return Response.Ok(response);
+            }
+            else
+            {
+                response.EnsureSuccessStatusCode();
+            }
         }
-        else
+        catch (HttpRequestException e)
         {
-            response.EnsureSuccessStatusCode();
+            return Response.Fail(e);
         }
-    }
-    catch (HttpRequestException e)
+
+        return Response.Ok();
+    }).WithInit(async context =>
     {
-        return Response.Fail(e);
-    }
+        var response = await httpClient.PostAsJsonAsync(id, new { url });
+        response.EnsureSuccessStatusCode();
+    })
+    .WithClean(async context =>
+    {
+        await httpClient.DeleteAsync(id);
+    })
+    .WithLoadSimulations(
+        Simulation.Inject(rate: rate,
+                          interval: TimeSpan.FromSeconds(intervalInSeconds),
+                          during: TimeSpan.FromSeconds(durationInSeconds))
+    );
 
-    return Response.Ok();
-}).WithInit(async context =>
-{
-    var response = await httpClient.PostAsJsonAsync(id, new { url });
-    response.EnsureSuccessStatusCode();
-})
-.WithClean(async context =>
-{
-    await httpClient.DeleteAsync(id);
-})
-.WithLoadSimulations(
-    Simulation.Inject(rate: rate,
-                      interval: TimeSpan.FromSeconds(intervalInSeconds),
-                      during: TimeSpan.FromSeconds(durationInSeconds))
-);
+    list[i] = getRedirects;
+}
 
-NBomberRunner.RegisterScenarios(getRedirects).Run();
+
+
+NBomberRunner.RegisterScenarios(list).Run();
