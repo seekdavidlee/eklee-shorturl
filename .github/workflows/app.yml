@@ -21,7 +21,7 @@ jobs:
           Write-Host "Environment Selector: $envSelector Branch ${{ github.ref }}"
           if ($envSelector -eq '' -or $envSelector -eq 'default') {            
             if ('${{ github.ref }}' -eq 'refs/heads/main') { 
-              echo "build_env=prod" >> $env:GITHUB_OUTPUT
+              echo "build_env=prod" >> $env:GITHUB_OUTPUT              
             } else {
               echo "build_env=dev" >> $env:GITHUB_OUTPUT
             }
@@ -39,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Azure CLI Login
+      - name: Azure CLI Login for ${{ needs.setup.outputs.build_env }}
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
