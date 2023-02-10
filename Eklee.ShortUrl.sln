@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32804.467
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eklee.ShortUrl", "Eklee.ShortUrl\Eklee.ShortUrl.csproj", "{11876B7C-5989-4922-BC7C-D3A1EC346804}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eklee.ShortUrl", "Eklee.ShortUrl\Eklee.ShortUrl.csproj", "{11876B7C-5989-4922-BC7C-D3A1EC346804}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Eklee.ShortUrl.LoadTester", "Eklee.ShortUrl.LoadTester\Eklee.ShortUrl.LoadTester.csproj", "{926F37AD-7822-44C2-AE69-37C3C28315DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{11876B7C-5989-4922-BC7C-D3A1EC346804}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11876B7C-5989-4922-BC7C-D3A1EC346804}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11876B7C-5989-4922-BC7C-D3A1EC346804}.Release|Any CPU.Build.0 = Release|Any CPU
+		{926F37AD-7822-44C2-AE69-37C3C28315DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{926F37AD-7822-44C2-AE69-37C3C28315DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{926F37AD-7822-44C2-AE69-37C3C28315DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{926F37AD-7822-44C2-AE69-37C3C28315DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
