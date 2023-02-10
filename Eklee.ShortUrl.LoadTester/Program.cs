@@ -1,18 +1,33 @@
-﻿// See https://aka.ms/new-console-template for more information
-using NBomber.CSharp;
+﻿using NBomber.CSharp;
 using System.Net.Http.Json;
 
-using var httpClient = new HttpClient();
-httpClient.BaseAddress = new Uri(Environment.GetEnvironmentVariable("XURL"));
-httpClient.DefaultRequestHeaders.Add("API_KEY", Environment.GetEnvironmentVariable("XAPIKEY"));
+int rate = int.Parse(Environment.GetEnvironmentVariable("X_RATE"));
+int intervalInSeconds = int.Parse(Environment.GetEnvironmentVariable("X_INTERVAL_IN_SECONDS"));
+int durationInSeconds = int.Parse(Environment.GetEnvironmentVariable("X_DURATION_IN_MINS")) * 60;
+
+var clientHandler = new HttpClientHandler { AllowAutoRedirect = false };
+using var httpClient = new HttpClient(clientHandler);
+httpClient.BaseAddress = new Uri(Environment.GetEnvironmentVariable("X_URL"));
+httpClient.DefaultRequestHeaders.Add("API_KEY", Environment.GetEnvironmentVariable("X_API_KEY"));
 
 var id = "A1234";
-var scenario = Scenario.Create("get_redirects", async context =>
+string url = $"https://{Guid.NewGuid():N}.com";
+
+var getRedirects = Scenario.Create("get_redirects", async context =>
 {
     try
     {
         var response = await httpClient.GetAsync(id);
-        response.EnsureSuccessStatusCode();
+        if (response.StatusCode.Equals(System.Net.HttpStatusCode.Found) &&
+            response.Headers.Location != null &&
+            response.Headers.Location.ToString().StartsWith(url))
+        {
+            return Response.Ok(response);
+        }
+        else
+        {
+            response.EnsureSuccessStatusCode();
+        }
     }
     catch (HttpRequestException e)
     {
@@ -22,13 +37,17 @@ var scenario = Scenario.Create("get_redirects", async context =>
     return Response.Ok();
 }).WithInit(async context =>
 {
-    var response = await httpClient.PostAsJsonAsync(id, new { url = $"https://{Guid.NewGuid():N}.com" });
+    var response = await httpClient.PostAsJsonAsync(id, new { url });
     response.EnsureSuccessStatusCode();
 })
+.WithClean(async context =>
+{
+    await httpClient.DeleteAsync(id);
+})
 .WithLoadSimulations(
-    Simulation.Inject(rate: 10,
-                      interval: TimeSpan.FromSeconds(1),
-                      during: TimeSpan.FromSeconds(30))
+    Simulation.Inject(rate: rate,
+                      interval: TimeSpan.FromSeconds(intervalInSeconds),
+                      during: TimeSpan.FromSeconds(durationInSeconds))
 );
 
-NBomberRunner.RegisterScenarios(scenario).Run();
+NBomberRunner.RegisterScenarios(getRedirects).Run();
