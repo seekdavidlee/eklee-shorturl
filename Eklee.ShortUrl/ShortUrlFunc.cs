@@ -21,6 +21,7 @@ public class ShortUrlFunc
 {
     private readonly IConfiguration configuration;
     private readonly HashSet<string> bannedList;
+    private readonly bool isSmokeTesting;
     public ShortUrlFunc(IConfiguration configuration)
     {
         this.configuration = configuration;
@@ -29,6 +30,7 @@ public class ShortUrlFunc
         {
             "swagger"
         };
+        isSmokeTesting = bool.Parse(configuration["SMOKE_TEST"]);
     }
 
     [OpenApiIgnore]
@@ -162,7 +164,7 @@ public class ShortUrlFunc
             }
         }
 
-        if (!IpList.Contains(req.HttpContext.Connection.RemoteIpAddress.ToString()))
+        if (!isSmokeTesting && !IpList.Contains(req.HttpContext.Connection.RemoteIpAddress.ToString()))
         {
             return false;
         }

@@ -96,6 +96,10 @@ resource funcapp 'Microsoft.Web/sites@2022-03-01' = {
           value: allowedIPList
         }
         {
+          name: 'SMOKE_TEST'
+          value: 'false'
+        }        
+        {
           name: 'FUNCTIONS_WORKER_RUNTIME'
           value: 'dotnet'
         }
