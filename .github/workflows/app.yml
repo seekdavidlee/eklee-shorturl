@@ -72,4 +72,4 @@ jobs:
 
       - id: smoke-test
         name: Smoke test
-        run: dotnet test -ResourceGroupName dotnet test -e X_URL=${{ env.base_url }} -e X_API_KEY=${{ secrets.APIKEY }}
+        run: dotnet test -e X_URL=${{ env.base_url }} -e X_API_KEY=${{ secrets.APIKEY }}
