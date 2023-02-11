@@ -69,3 +69,13 @@ jobs:
       - id: deploy
         name: Deploy code
         run: .\Deployment\Deploy.ps1 -ResourceGroupName ${{ env.appResourceGroup }} -AppName ${{ steps.build_az_env.outputs.funcName }}
+
+      - id: smoke-test
+        if: ${{ needs.setup.outputs.build_env != 'prod' }}
+        name: Smoke test
+        run: |
+          $AppName = "${{ steps.build_az_env.outputs.funcName }}"
+          $ResourceGroupName = "${{ env.appResourceGroup }}"
+          az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=true"
+          dotnet test -e X_URL=${{ env.base_url }} -e X_API_KEY=${{ secrets.APIKEY }}
+          az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=false"
