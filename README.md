@@ -54,11 +54,19 @@ Your Azure Credential should look like the following:
 3. Swagger doc is included. Navigate to /swagger to view the API documentation. As you may already tell, the word "swagger" cannot be used as a id.
 4. You can add additional words to be banned as id. Create a configuration named BannedList and add all the words into a comma-deliminated list as the value.
 
+## Integration Test
+
+To run integration tests, you can run the following:
+
+```bash
+dotnet test -e X_URL=https://mydomain.com -e X_API_KEY=yourapikey
+```
+
 ## Performance Test
 
-To run performance testing, you can review the code at Eklee.ShortUrl.LoadTester. It uses [NBomber](https://www.nuget.org/packages/NBomber/). The following parameters need to be configured in launch settings.
+To run performance tests, you can review the code at Eklee.ShortUrl.LoadTester. It uses [NBomber](https://www.nuget.org/packages/NBomber/). The following parameters need to be configured in launch settings.
 
-```
+```json
 {
 	"profiles": {
 		"Eklee.ShortUrl.LoadTester": {
