@@ -71,6 +71,7 @@ jobs:
         run: .\Deployment\Deploy.ps1 -ResourceGroupName ${{ env.appResourceGroup }} -AppName ${{ steps.build_az_env.outputs.funcName }}
 
       - id: smoke-test
+        if: ${{ needs.setup.outputs.build_env != 'prod' }}
         name: Smoke test
         run: |
           $AppName = "${{ steps.build_az_env.outputs.funcName }}"
