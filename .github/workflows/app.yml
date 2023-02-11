@@ -75,6 +75,6 @@ jobs:
         run: |
           $AppName = "${{ steps.build_az_env.outputs.funcName }}"
           $ResourceGroupName = "${{ env.appResourceGroup }}"
-          az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=true"
+          az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=true" -o none
           dotnet test -e X_URL=${{ env.base_url }} -e X_API_KEY=${{ secrets.APIKEY }} --filter TestCategory=${{ needs.setup.outputs.build_env }} --logger "junit"
-          az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=false"
+          az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=false" -o none
