@@ -70,14 +70,23 @@ jobs:
         name: Deploy code
         run: .\Deployment\Deploy.ps1 -ResourceGroupName ${{ env.appResourceGroup }} -AppName ${{ steps.build_az_env.outputs.funcName }}
 
-      - id: smoke-test        
-        name: Smoke test
+      - name: Enable Smoke test flag
         run: |
           $AppName = "${{ steps.build_az_env.outputs.funcName }}"
           $ResourceGroupName = "${{ env.appResourceGroup }}"
           az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=true" -o none
+
+      - id: smoke-test        
+        name: Enable Smoke test flag
+        run: |
           $unitTestFilePath = "${{ env.RUNNER_TEMP }}\TestResults\unittests.xml"
-          dotnet test -e X_URL=${{ env.base_url }} -e X_API_KEY=${{ secrets.APIKEY }} --filter TestCategory=${{ needs.setup.outputs.build_env }} --logger "junit;LogFilePath=$unitTestFilePath"
+          dotnet test -e X_URL=${{ env.base_url }} -e X_API_KEY=${{ secrets.APIKEY }} --filter TestCategory=${{ needs.setup.outputs.build_env }} --logger "junit;LogFilePath=$unitTestFilePath"        
+
+      - name: Disable Smoke test flag
+        if: ${{ always() }}
+        run: |
+          $AppName = "${{ steps.build_az_env.outputs.funcName }}"
+          $ResourceGroupName = "${{ env.appResourceGroup }}"
           az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=false" -o none
 
       - name: Publish test results
