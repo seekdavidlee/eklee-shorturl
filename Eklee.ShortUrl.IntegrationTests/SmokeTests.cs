@@ -80,6 +80,16 @@ public class SmokeTests : IDisposable
     }
 
     [TestMethod, TestCategory(Constants.Dev), TestCategory(Constants.Prod)]
+    public async Task GetStatsWithBadYear_GetBadRequest()
+    {
+        this.clientHandler.AllowAutoRedirect = true;
+
+        int year = DateTime.UtcNow.Year - 5;
+        var response = await httpClient.GetAsync($"stats/{year}");
+        Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [TestMethod, TestCategory(Constants.Dev), TestCategory(Constants.Prod)]
     public async Task GetSwaggerUI()
     {
         this.clientHandler.AllowAutoRedirect = true;

@@ -77,7 +77,7 @@ jobs:
           az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=true" -o none
 
       - id: smoke-test        
-        name: Enable Smoke test flag
+        name: Run Smoke test
         run: |
           $unitTestFilePath = "${{ env.RUNNER_TEMP }}\TestResults\unittests.xml"
           dotnet test -e X_URL=${{ env.base_url }} -e X_API_KEY=${{ secrets.APIKEY }} --filter TestCategory=${{ needs.setup.outputs.build_env }} --logger "junit;LogFilePath=$unitTestFilePath"        

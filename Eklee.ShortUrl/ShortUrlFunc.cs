@@ -61,6 +61,11 @@ public class ShortUrlFunc
     int year,
     CancellationToken cancellationToken)
     {
+        if (year < DateTime.UtcNow.AddYears(-5).Year) 
+        {
+            return new BadRequestResult();
+        }
+
         AsyncPageable<VisitEntity> queryResults = statTableClient.QueryAsync<VisitEntity>(filter: $"PartitionKey eq '{year}'", cancellationToken: cancellationToken);
         var h = new Dictionary<string, VisitStat>();
         await foreach (VisitEntity entity in queryResults)
