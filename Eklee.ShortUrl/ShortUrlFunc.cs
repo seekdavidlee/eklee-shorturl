@@ -61,6 +61,11 @@ public class ShortUrlFunc
     int year,
     CancellationToken cancellationToken)
     {
+        if (!ValidateRequest(req))
+        {
+            return new UnauthorizedResult();
+        }
+
         if (year < DateTime.UtcNow.AddYears(-5).Year) 
         {
             return new BadRequestResult();

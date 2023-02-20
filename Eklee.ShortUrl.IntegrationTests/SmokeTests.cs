@@ -63,7 +63,7 @@ public class SmokeTests : IDisposable
         var statResponse = await httpClient.GetAsync($"stats/{year}");
         statResponse.EnsureSuccessStatusCode();
 
-        var dto = JsonSerializer.Deserialize<Stats>(await statResponse.Content.ReadAsStringAsync());
+        var dto = JsonSerializer.Deserialize<Stats>(await statResponse.Content.ReadAsStringAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         Assert.IsNotNull(dto);
         Assert.AreEqual(year, dto.Year);
 
