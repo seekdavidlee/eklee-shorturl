@@ -84,7 +84,7 @@ public class SmokeTests : IDisposable
     {
         this.clientHandler.AllowAutoRedirect = true;
 
-        int year = DateTime.UtcNow.Year - 5;
+        int year = DateTime.UtcNow.Year - 6;
         var response = await httpClient.GetAsync($"stats/{year}");
         Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
     }
