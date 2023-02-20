@@ -14,15 +14,12 @@ public static class Constants
 public class SmokeTests : IDisposable
 {
     private readonly HttpClient httpClient;
-    private readonly HttpClient unauthenticatedHttpClient;
     private readonly HttpClientHandler clientHandler;
 
     public SmokeTests()
     {
-
         this.clientHandler = new HttpClientHandler { AllowAutoRedirect = false };
-        this.httpClient = HttpClientFactory.Create(clientHandler);
-        this.unauthenticatedHttpClient = HttpClientFactory.Create();
+        this.httpClient = new HttpClient(clientHandler);
 
         var xurl = Environment.GetEnvironmentVariable("X_URL");
 
@@ -32,7 +29,6 @@ public class SmokeTests : IDisposable
         }
 
         this.httpClient.BaseAddress = new Uri(xurl);
-        this.unauthenticatedHttpClient.BaseAddress = new Uri(xurl);
 
         var xapiKey = Environment.GetEnvironmentVariable("X_API_KEY");
 
@@ -50,7 +46,9 @@ public class SmokeTests : IDisposable
         var id = Guid.NewGuid().ToString("N");
         string url = $"https://{Guid.NewGuid():N}.com";
 
-        var response = await unauthenticatedHttpClient.PostAsJsonAsync(id, new { url });
+        httpClient.DefaultRequestHeaders.Remove("X_API_KEY");
+
+        var response = await httpClient.PostAsJsonAsync(id, new { url });
         Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
@@ -124,7 +122,6 @@ public class SmokeTests : IDisposable
     public void Dispose()
     {
         this.httpClient.Dispose();
-        this.unauthenticatedHttpClient.Dispose();
 
         // Suppress finalization.
         GC.SuppressFinalize(this);
