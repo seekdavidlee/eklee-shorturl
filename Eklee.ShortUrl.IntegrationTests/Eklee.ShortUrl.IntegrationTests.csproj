@@ -20,4 +20,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Eklee.ShortUrl\Eklee.ShortUrl.csproj" />
+  </ItemGroup>
+
 </Project>

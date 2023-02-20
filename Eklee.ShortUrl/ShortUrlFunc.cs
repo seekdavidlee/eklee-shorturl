@@ -14,6 +14,7 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.OpenApi.Models;
 using System.Net;
 using System;
+using System.Linq;
 
 namespace Eklee.ShortUrl;
 
@@ -28,9 +29,16 @@ public class ShortUrlFunc
         var list = this.configuration["BannedList"]?.Split(',');
         this.bannedList = new HashSet<string>(list ?? Array.Empty<string>())
         {
-            "swagger"
+            "swagger",
+            "stats"
         };
-        isSmokeTesting = bool.Parse(configuration["SMOKE_TEST"]);
+
+        var smokeTest = configuration["SMOKE_TEST"];
+        if (string.IsNullOrWhiteSpace(smokeTest))
+        {
+            throw new ArgumentNullException(nameof(smokeTest));
+        }
+        isSmokeTesting = bool.Parse(smokeTest);
     }
 
     [OpenApiIgnore]
@@ -46,15 +54,76 @@ public class ShortUrlFunc
     [OpenApiResponseWithBody(statusCode: HttpStatusCode.Redirect, contentType: "text/plain", bodyType: typeof(string), Summary = "Redirection URL.", Description = "The response will redirect the browser to the intended URL.")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Summary = "If the key is not found.", Description = "The response will return a Not Found response if the key is not found.")]
     [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Unauthorized, Summary = "If the key is found but there is an IP restriction.", Description = "The response will return a Forbidden if your IP does not match the expected IP address.")]
+    [FunctionName(nameof(GetStats))]
+    public async Task<IActionResult> GetStats(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "stats/{year:int}")] HttpRequest req,
+    [Table("Visit", Connection = "UrlStorageConnection")] TableClient statTableClient,
+    int year,
+    CancellationToken cancellationToken)
+    {
+        if (!ValidateRequest(req))
+        {
+            return new UnauthorizedResult();
+        }
+
+        if (year < DateTime.UtcNow.AddYears(-5).Year) 
+        {
+            return new BadRequestResult();
+        }
+
+        AsyncPageable<VisitEntity> queryResults = statTableClient.QueryAsync<VisitEntity>(filter: $"PartitionKey eq '{year}'", cancellationToken: cancellationToken);
+        var h = new Dictionary<string, VisitStat>();
+        await foreach (VisitEntity entity in queryResults)
+        {
+            var parts = entity.RowKey.Split('.');
+            string k = parts[0];
+            if (h.ContainsKey(k))
+            {
+                var vStat = h[k];
+                vStat.VisitCount += 1;
+                if (entity.Time > vStat.LastVist)
+                {
+                    vStat.LastVist = entity.Time;
+                }
+
+                if (entity.Time < vStat.FirstVist)
+                {
+                    vStat.FirstVist = entity.Time;
+                }
+            }
+            else
+            {
+                h.Add(k, new VisitStat
+                {
+                    VisitCount = 1,
+                    FirstVist = entity.Time,
+                    LastVist = entity.Time,
+                    Key = k
+                });
+            }
+        }
+
+        return new OkObjectResult(new Stats
+        {
+            Year = year,
+            VisitStats = h.Values.ToList(),
+        });
+    }
+
+    [OpenApiOperation(operationId: nameof(GetShortUrl), Summary = "Gets the url.", Description = "This API call will return your url based on a key provided.", Visibility = OpenApiVisibilityType.Important)]
+    [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(string), Summary = "The key.", Description = "The key to the URL.", Visibility = OpenApiVisibilityType.Important)]
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.Redirect, contentType: "text/plain", bodyType: typeof(string), Summary = "Redirection URL.", Description = "The response will redirect the browser to the intended URL.")]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.NotFound, Summary = "If the key is not found.", Description = "The response will return a Not Found response if the key is not found.")]
+    [OpenApiResponseWithoutBody(statusCode: HttpStatusCode.Unauthorized, Summary = "If the key is found but there is an IP restriction.", Description = "The response will return a Forbidden if your IP does not match the expected IP address.")]
     [FunctionName(nameof(GetShortUrl))]
     public async Task<IActionResult> GetShortUrl(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "{id:regex((^| )(?!swagger)[^ ]*)}")] HttpRequest req,
-    [Table("Url", Connection = "UrlStorageConnection")] TableClient tableClient,
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "{id:regex(^((?!swagger|stats).)*$)}")] HttpRequest req,
+    [Table("Url", Connection = "UrlStorageConnection")] TableClient urlTableClient,
+    [Table("Visit", Connection = "UrlStorageConnection")] TableClient statTableClient,
     string id, CancellationToken cancellationToken)
     {
-        AsyncPageable<UrlEntity> queryResults = tableClient.QueryAsync<UrlEntity>(filter: $"PartitionKey eq 'common' and RowKey eq '{id}'", cancellationToken: cancellationToken);
+        AsyncPageable<UrlEntity> queryResults = urlTableClient.QueryAsync<UrlEntity>(filter: $"PartitionKey eq 'common' and RowKey eq '{id}'", cancellationToken: cancellationToken);
         await foreach (UrlEntity entity in queryResults)
-
         {
             if (entity.AllowedIPList != null)
             {
@@ -73,6 +142,15 @@ public class ShortUrlFunc
                     return new JsonResult(new { entity.Url });
                 }
             }
+
+            await statTableClient.AddEntityAsync(new VisitEntity
+            {
+                RowKey = $"{id}.{Guid.NewGuid():n}",
+                PartitionKey = $"{DateTime.UtcNow.Year}",
+                IP = req.HttpContext.Connection.RemoteIpAddress.ToString(),
+                Time = DateTime.UtcNow,
+                Url = entity.Url,
+            }, cancellationToken);
 
             return new RedirectResult(entity.Url);
         }
