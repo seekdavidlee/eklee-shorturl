@@ -61,6 +61,7 @@ resource funcapp 'Microsoft.Web/sites@2022-03-01' = {
     serverFarmId: funcappplan.id
     clientAffinityEnabled: true
     siteConfig: {
+      functionAppScaleLimit: 5  // prevent unexpected cost
       webSocketsEnabled: true
       appSettings: [
         {
@@ -98,7 +99,7 @@ resource funcapp 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'SMOKE_TEST'
           value: 'false'
-        }        
+        }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
           value: 'dotnet'
