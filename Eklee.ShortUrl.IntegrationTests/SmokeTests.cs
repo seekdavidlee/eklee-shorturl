@@ -19,9 +19,10 @@ public class SmokeTests : IDisposable
 
     public SmokeTests()
     {
+
         this.clientHandler = new HttpClientHandler { AllowAutoRedirect = false };
-        this.httpClient = new HttpClient(clientHandler);
-        this.unauthenticatedHttpClient = new HttpClient(clientHandler);
+        this.httpClient = HttpClientFactory.Create(clientHandler);
+        this.unauthenticatedHttpClient = HttpClientFactory.Create();
 
         var xurl = Environment.GetEnvironmentVariable("X_URL");
 
@@ -94,8 +95,6 @@ public class SmokeTests : IDisposable
     [TestMethod, TestCategory(Constants.Dev), TestCategory(Constants.Prod)]
     public async Task GetStatsWithBadYear_GetBadRequest()
     {
-        this.clientHandler.AllowAutoRedirect = true;
-
         int year = DateTime.UtcNow.Year - 6;
         var response = await httpClient.GetAsync($"stats/{year}");
         Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
