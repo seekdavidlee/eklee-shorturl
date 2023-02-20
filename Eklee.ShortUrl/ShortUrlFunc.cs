@@ -66,7 +66,7 @@ public class ShortUrlFunc
             return new UnauthorizedResult();
         }
 
-        if (year < DateTime.UtcNow.AddYears(-5).Year) 
+        if (year < DateTime.UtcNow.AddYears(-5).Year)
         {
             return new BadRequestResult();
         }
@@ -247,11 +247,6 @@ public class ShortUrlFunc
             return false;
         }
 
-        if (!req.Headers.TryGetValue("API_KEY", out var apiKey) || apiKey != this.configuration["API_KEY"])
-        {
-            return false;
-        }
-
-        return true;
+        return req.Headers.TryGetValue("API_KEY", out var apiKey) && apiKey != this.configuration["API_KEY"];
     }
 }

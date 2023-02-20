@@ -61,7 +61,7 @@ resource funcapp 'Microsoft.Web/sites@2022-03-01' = {
     serverFarmId: funcappplan.id
     clientAffinityEnabled: true
     siteConfig: {
-      functionAppScaleLimit: 5  // prevent unexpected cost
+      functionAppScaleLimit: 2  // prevent unexpected cost
       webSocketsEnabled: true
       appSettings: [
         {

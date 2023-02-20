@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using YamlDotNet.Serialization;
 
 namespace Eklee.ShortUrl.IntegrationTests;
 
@@ -15,12 +14,14 @@ public static class Constants
 public class SmokeTests : IDisposable
 {
     private readonly HttpClient httpClient;
+    private readonly HttpClient unauthenticatedHttpClient;
     private readonly HttpClientHandler clientHandler;
 
     public SmokeTests()
     {
         this.clientHandler = new HttpClientHandler { AllowAutoRedirect = false };
         this.httpClient = new HttpClient(clientHandler);
+        this.unauthenticatedHttpClient = new HttpClient(clientHandler);
 
         var xurl = Environment.GetEnvironmentVariable("X_URL");
 
@@ -30,6 +31,7 @@ public class SmokeTests : IDisposable
         }
 
         this.httpClient.BaseAddress = new Uri(xurl);
+        this.unauthenticatedHttpClient.BaseAddress = new Uri(xurl);
 
         var xapiKey = Environment.GetEnvironmentVariable("X_API_KEY");
 
@@ -39,6 +41,16 @@ public class SmokeTests : IDisposable
         }
 
         httpClient.DefaultRequestHeaders.Add("API_KEY", xapiKey);
+    }
+
+    [TestMethod, TestCategory(Constants.Dev)]
+    public async Task CreateAndGetUnauthorized()
+    {
+        var id = Guid.NewGuid().ToString("N");
+        string url = $"https://{Guid.NewGuid():N}.com";
+
+        var response = await unauthenticatedHttpClient.PostAsJsonAsync(id, new { url });
+        Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [TestMethod, TestCategory(Constants.Dev)]
@@ -113,6 +125,7 @@ public class SmokeTests : IDisposable
     public void Dispose()
     {
         this.httpClient.Dispose();
+        this.unauthenticatedHttpClient.Dispose();
 
         // Suppress finalization.
         GC.SuppressFinalize(this);
