@@ -249,6 +249,6 @@ public class ShortUrlFunc
             return false;
         }
 
-        return req.Headers.TryGetValue("API_KEY", out var apiKey) && apiKey != this.configuration["API_KEY"];
+        return req.Headers.TryGetValue("API_KEY", out var apiKey) && apiKey == this.configuration["API_KEY"];
     }
 }
