@@ -15,7 +15,6 @@ using Microsoft.OpenApi.Models;
 using System.Net;
 using System;
 using System.Linq;
-using System.Collections;
 
 namespace Eklee.ShortUrl;
 
@@ -88,7 +87,8 @@ public class ShortUrlFunc
                 {
                     VisitCount = 1,
                     FirstVist = entity.Time,
-                    LastVist = entity.Time
+                    LastVist = entity.Time,
+                    Key = k
                 });
             }
         }

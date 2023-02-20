@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using YamlDotNet.Serialization;
 
 namespace Eklee.ShortUrl.IntegrationTests;
 
@@ -42,7 +44,7 @@ public class SmokeTests : IDisposable
     [TestMethod, TestCategory(Constants.Dev)]
     public async Task CreateUpdateAndDelete()
     {
-        var id = $"B1230";
+        var id = Guid.NewGuid().ToString("N");
         string url = $"https://{Guid.NewGuid():N}.com";
 
         var response = await httpClient.PostAsJsonAsync(id, new { url });
@@ -53,6 +55,21 @@ public class SmokeTests : IDisposable
         Assert.AreEqual(HttpStatusCode.Found, redirectResponse.StatusCode);
         Assert.IsNotNull(redirectResponse.Headers.Location);
         Assert.IsTrue(redirectResponse.Headers.Location.ToString().StartsWith(url));
+
+        // Get a second time
+        await httpClient.GetAsync(id);
+
+        int year = DateTime.UtcNow.Year;
+        var statResponse = await httpClient.GetAsync($"stats/{year}");
+        statResponse.EnsureSuccessStatusCode();
+
+        var dto = JsonSerializer.Deserialize<Stats>(await statResponse.Content.ReadAsStringAsync());
+        Assert.IsNotNull(dto);
+        Assert.AreEqual(year, dto.Year);
+
+        var thisStat = dto.VisitStats.SingleOrDefault(x => x.Key == id);
+        Assert.IsNotNull(thisStat);
+        Assert.AreEqual(2, thisStat.VisitCount);
 
         var deleteResponse = await httpClient.DeleteAsync(id);
         deleteResponse.EnsureSuccessStatusCode();
