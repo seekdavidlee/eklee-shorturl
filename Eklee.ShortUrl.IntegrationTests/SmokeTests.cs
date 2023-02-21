@@ -46,7 +46,7 @@ public class SmokeTests : IDisposable
         var id = Guid.NewGuid().ToString("N");
         string url = $"https://{Guid.NewGuid():N}.com";
 
-        httpClient.DefaultRequestHeaders.Remove("X_API_KEY");
+        httpClient.DefaultRequestHeaders.Remove("API_KEY");
 
         var response = await httpClient.PostAsJsonAsync(id, new { url });
         Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
