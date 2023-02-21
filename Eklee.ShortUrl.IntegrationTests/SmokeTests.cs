@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using YamlDotNet.Serialization;
 
 namespace Eklee.ShortUrl.IntegrationTests;
 
@@ -39,6 +38,18 @@ public class SmokeTests : IDisposable
         }
 
         httpClient.DefaultRequestHeaders.Add("API_KEY", xapiKey);
+    }
+
+    [TestMethod, TestCategory(Constants.Dev)]
+    public async Task CreateAndGetUnauthorized()
+    {
+        var id = Guid.NewGuid().ToString("N");
+        string url = $"https://{Guid.NewGuid():N}.com";
+
+        httpClient.DefaultRequestHeaders.Remove("API_KEY");
+
+        var response = await httpClient.PostAsJsonAsync(id, new { url });
+        Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
     [TestMethod, TestCategory(Constants.Dev)]
@@ -82,8 +93,6 @@ public class SmokeTests : IDisposable
     [TestMethod, TestCategory(Constants.Dev), TestCategory(Constants.Prod)]
     public async Task GetStatsWithBadYear_GetBadRequest()
     {
-        this.clientHandler.AllowAutoRedirect = true;
-
         int year = DateTime.UtcNow.Year - 6;
         var response = await httpClient.GetAsync($"stats/{year}");
         Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);

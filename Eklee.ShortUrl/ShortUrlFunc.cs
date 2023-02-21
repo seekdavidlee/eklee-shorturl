@@ -23,6 +23,8 @@ public class ShortUrlFunc
     private readonly IConfiguration configuration;
     private readonly HashSet<string> bannedList;
     private readonly bool isSmokeTesting;
+    private const string CommonPartitionKey = "common";
+
     public ShortUrlFunc(IConfiguration configuration)
     {
         this.configuration = configuration;
@@ -66,7 +68,7 @@ public class ShortUrlFunc
             return new UnauthorizedResult();
         }
 
-        if (year < DateTime.UtcNow.AddYears(-5).Year) 
+        if (year < DateTime.UtcNow.AddYears(-5).Year)
         {
             return new BadRequestResult();
         }
@@ -122,7 +124,7 @@ public class ShortUrlFunc
     [Table("Visit", Connection = "UrlStorageConnection")] TableClient statTableClient,
     string id, CancellationToken cancellationToken)
     {
-        AsyncPageable<UrlEntity> queryResults = urlTableClient.QueryAsync<UrlEntity>(filter: $"PartitionKey eq 'common' and RowKey eq '{id}'", cancellationToken: cancellationToken);
+        AsyncPageable<UrlEntity> queryResults = urlTableClient.QueryAsync<UrlEntity>(filter: $"PartitionKey eq '{CommonPartitionKey}' and RowKey eq '{id}'", cancellationToken: cancellationToken);
         await foreach (UrlEntity entity in queryResults)
         {
             if (entity.AllowedIPList != null)
@@ -190,7 +192,7 @@ public class ShortUrlFunc
             await tableClient.UpsertEntityAsync(new UrlEntity
             {
                 RowKey = id,
-                PartitionKey = "common",
+                PartitionKey = CommonPartitionKey,
                 Url = dto.Url,
                 AllowedIPList = dto.AllowedIPList
             });
@@ -247,11 +249,6 @@ public class ShortUrlFunc
             return false;
         }
 
-        if (!req.Headers.TryGetValue("API_KEY", out var apiKey) || apiKey != this.configuration["API_KEY"])
-        {
-            return false;
-        }
-
-        return true;
+        return req.Headers.TryGetValue("API_KEY", out var apiKey) && apiKey == this.configuration["API_KEY"];
     }
 }
