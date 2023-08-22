@@ -1,0 +1,20 @@
+{
+    "version": "0.1.1",
+    "unique-resource-variables": {
+        "resources1": [
+            {
+                "asm-resource-id": "app-database",
+                "resource-type": "Microsoft.Storage/storageAccounts"
+            }
+        ]
+    },
+    "groups": [
+        {
+            "resource-group-name": "shorturl-db-@(asm.Environment)",
+            "unique-resources-variable-key": "resources1",
+            "asm-solution-id": "shorturl",
+            "asm-environment": "@(asm.Environment)",
+            "asm-component": "database"
+        }
+    ]
+}

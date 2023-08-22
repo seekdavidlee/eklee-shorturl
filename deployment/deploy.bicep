@@ -1,23 +1,23 @@
-param prefix string
-param appEnvironment string
+param prefix string = ''
+param appInsightsName string = ''
+param appPlanName string = ''
+param appName string = ''
+param appStorageName string = ''
+param appId string = ''
 param location string = resourceGroup().location
-@secure()
-param urlStorageConnection string
 @secure()
 param apiKey string
 param allowedIPList string
 
-var stackName = '${prefix}${appEnvironment}'
-
-var tags = {
-  'stack-name': stackName
-  'stack-environment': appEnvironment
-}
+var appInsightsNameStr = empty(appInsightsName) ? '${prefix}${uniqueString(resourceGroup().name)}' : appInsightsName
+var appPlanNameStr = empty(appPlanName) ? '${prefix}${uniqueString(resourceGroup().name)}' : appPlanName
+var appNameStr = empty(appName) ? '${prefix}${uniqueString(resourceGroup().name)}' : appName
+var appIdStr = empty(appId) ? '${prefix}${uniqueString(resourceGroup().name)}' : appId
+var appStorageNameStr = empty(appStorageName) ? '${prefix}${uniqueString(resourceGroup().name)}' : appStorageName
 
 resource appinsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: stackName
+  name: appInsightsNameStr
   location: location
-  tags: tags
   kind: 'web'
   properties: {
     Application_Type: 'web'
@@ -26,10 +26,9 @@ resource appinsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-resource str 'Microsoft.Storage/storageAccounts@2021-09-01' = {
-  name: stackName
+resource str 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+  name: appStorageNameStr
   location: location
-  tags: tags
   kind: 'StorageV2'
   sku: {
     name: 'Standard_LRS'
@@ -39,29 +38,36 @@ resource str 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   }
 }
 
-var strConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${stackName};AccountKey=${listKeys(str.id, str.apiVersion).keys[0].value};EndpointSuffix=core.windows.net'
-
-resource funcappplan 'Microsoft.Web/serverfarms@2020-10-01' = {
-  name: stackName
+resource funcappplan 'Microsoft.Web/serverfarms@2022-09-01' = {
+  name: appPlanNameStr
   location: location
-  tags: tags
   sku: {
     name: 'Y1'
     tier: 'Dynamic'
   }
 }
 
-resource funcapp 'Microsoft.Web/sites@2022-03-01' = {
-  name: stackName
+resource appid 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: appIdStr
   location: location
-  tags: tags
+}
+
+resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
+  name: appNameStr
+  location: location
   kind: 'functionapp'
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${appid.id}': {}
+    }
+  }
   properties: {
     httpsOnly: true
     serverFarmId: funcappplan.id
     clientAffinityEnabled: true
     siteConfig: {
-      functionAppScaleLimit: 2  // prevent unexpected cost
+      functionAppScaleLimit: 2 // prevent unexpected cost
       webSocketsEnabled: true
       appSettings: [
         {
@@ -69,24 +75,16 @@ resource funcapp 'Microsoft.Web/sites@2022-03-01' = {
           value: appinsights.properties.InstrumentationKey
         }
         {
-          name: 'AzureWebJobsDashboard'
-          value: strConnectionString
+          name: 'AzureWebJobsStorage__accountName'
+          value: str.name
         }
         {
-          name: 'AzureWebJobsStorage'
-          value: strConnectionString
+          name: 'UrlStorageConnection__credential'
+          value: 'managedidentity'
         }
         {
-          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: strConnectionString
-        }
-        {
-          name: 'WEBSITE_CONTENTSHARE'
-          value: 'funccontent'
-        }
-        {
-          name: 'UrlStorageConnection'
-          value: urlStorageConnection
+          name: 'UrlStorageConnection__clientId'
+          value: appid.properties.clientId
         }
         {
           name: 'API_KEY'

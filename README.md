@@ -1,4 +1,5 @@
 # ShortUrl
+
 ShortUrl is a HTTP redirection service that runs as an Azure Function HTTP Trigger. You can host your this service with your own domain name. This allows you to share your host URL with a friendly id with your friends and family from which they can be redirected to. The id you pick should be something short and simple. For exampe, you can may have a URL on your domain such as https://mydomain.com/hotel and this may redirect to https://www.somehotel.com/bookings/reservation/1234566. You or your friends and family just have to know your domain name and you can provide just a simple id and off they go.
 
 To create a short url, you will first need to submit a HTTP POST with the following payload to your domain with a Id. Be sure to include a API_KEY header you have defined in your configuration.
@@ -91,3 +92,33 @@ dotnet run --launch-profile Eklee.ShortUrl.LoadTester
 ```
 
 Once the test is completed, you should find results in a folder called Reports.
+
+# AzSolutionManager (ASM)
+
+This project uses AzSolutionManager (ASM) for deployment to an Azure Subscription.
+
+To use ASM, please follow the steps:
+
+1. Clone Utility and follow the steps in the az-solution-manager-utils repo to setup ASM.
+
+```
+git clone https://github.com/seekdavidlee/az-solution-manager-utils.git
+```
+
+2. Load Utility and apply manifest. Run each of the steps below.
+
+```
+# Pass in dev or prod
+$environmentName = "dev" 
+
+# Login
+az login --tenant <TENANT ID>
+az account set -s <SUBSCRIPTION ID>
+
+# Load utility script
+Push-Location ..\az-solution-manager-utils\; .\LoadASMToSession.ps1; Pop-Location
+$a = az account show | ConvertFrom-Json
+Invoke-ASMSetup -DIRECTORY database -TENANT $a.tenantId -SUBSCRIPTION $a.Id -ENVIRONMENT $environmentName -COMPONENT database
+Invoke-ASMSetup -DIRECTORY deployment -TENANT $a.tenantId -SUBSCRIPTION $a.Id -ENVIRONMENT $environmentName -COMPONENT app
+Set-ASMGitHubDeploymentToResourceGroup -SOLUTIONID "shorturl" -ENVIRONMENT $environmentName -TENANT $a.tenantId -SUBSCRIPTION $a.Id
+```

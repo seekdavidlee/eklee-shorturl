@@ -49,31 +49,34 @@ jobs:
         name: Resolve shared resources
         working-directory: .\deployment
         run: |
-          .\ResolveSharedResources.ps1
+          .\ResolveVars.ps1
 
       - name: Build azure environment
         id: build_az_env
         uses: azure/arm-deploy@v1
         with:
-          deploymentName: 'deploy-${{ needs.setup.outputs.build_env }}-${{ github.run_number }}'
-          resourceGroupName: ${{ env.appResourceGroup }}
+          deploymentName: '${{ needs.setup.outputs.build_env }}-${{ github.run_number }}'
+          resourceGroupName: ${{ steps.resolve-vars.outputs.resourceGroupName }}
           template: ./deployment/deploy.bicep
           failOnStdErr: false
           parameters: >
-            prefix=${{ vars.PREFIX }}
-            appEnvironment=${{ needs.setup.outputs.build_env }}            
-            urlStorageConnection=${{ secrets.URLSTORAGECONNECTION }}
-            apiKey=${{ secrets.APIKEY }}
-            allowedIPList=${{ vars.ALLOWEDIPLIST }}
+            prefix=${{ steps.resolve-vars.outputs.prefix }}
+            appInsightsName=${{ steps.resolve-vars.outputs.appInsightsName }}           
+            appPlanName=${{ steps.resolve-vars.outputs.appPlanName }}
+            appName=${{ steps.resolve-vars.outputs.appName }}
+            appStorageName=${{ steps.resolve-vars.outputs.appStorageName }}
+            appId=${{ steps.resolve-vars.outputs.appId }}
+            apiKey=${{ steps.resolve-vars.outputs.apiKey }}
+            allowedIPList=${{ steps.resolve-vars.outputs.allowedIPList }}
 
       - id: deploy
         name: Deploy code
-        run: .\Deployment\Deploy.ps1 -ResourceGroupName ${{ env.appResourceGroup }} -AppName ${{ steps.build_az_env.outputs.funcName }}
+        run: .\Deployment\Deploy.ps1 -ResourceGroupName ${{ steps.resolve-vars.outputs.resourceGroupName }} -AppName ${{ steps.build_az_env.outputs.funcName }}
 
       - name: Enable Smoke test flag
         run: |
           $AppName = "${{ steps.build_az_env.outputs.funcName }}"
-          $ResourceGroupName = "${{ env.appResourceGroup }}"
+          $ResourceGroupName = "${{ steps.resolve-vars.outputs.resourceGroupName }}"
           az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=true" -o none
 
       - id: smoke-test        
@@ -86,7 +89,7 @@ jobs:
         if: ${{ always() }}
         run: |
           $AppName = "${{ steps.build_az_env.outputs.funcName }}"
-          $ResourceGroupName = "${{ env.appResourceGroup }}"
+          $ResourceGroupName = "${{ steps.resolve-vars.outputs.resourceGroupName }}"
           az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=false" -o none
 
       - name: Publish test results
