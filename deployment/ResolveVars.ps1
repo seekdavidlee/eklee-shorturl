@@ -56,7 +56,7 @@ function GetResourceAndSetInOutput {
 }
     
 $solutionId = "shorturl"
-$json = asm lookup group --asm-sol $solutionId --asm-env $BUILD_ENV --logging Info
+$json = asm lookup group --asm-sol $solutionId --asm-env $BUILD_ENV --asm-com "app" --logging Info
 if ($LastExitCode -ne 0) {
     throw "Error with group lookup."
 }
