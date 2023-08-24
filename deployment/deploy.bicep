@@ -81,6 +81,14 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
           value: str.name
         }
         {
+          name: 'AzureWebJobsStorage__clientId'
+          value: appid.properties.clientId
+        }
+        {
+          name: 'AzureWebJobsStorage__credential'
+          value: 'managedidentity'
+        }
+        {
           name: 'UrlStorageConnection__tableServiceUri'
           value: 'https://${appDatabaseNameStr}.table.${environment().suffixes.storage}/'
         }
