@@ -19,17 +19,19 @@ function GetResource {
 }
 
 $solutionId = "shorturl"
-$o = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-id"
 
-$clientId = az identity show --ids $o.ResourceId --query "clientId" | ConvertFrom-Json
-
-$db = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-database"
 $func = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-func-store"
+$o = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-svc"
+$clientId = (az resource show --ids $o.ResourceId --query "identity" | ConvertFrom-Json).principalId
 
 az role assignment create --assignee $clientId --role "Storage Blob Data Owner" --scope $func.ResourceId
 if ($LastExitCode -ne 0) {        
     throw "Unable to assign 'Storage Blob Data Owner'."
 }
+
+$db = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-database"
+$o = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-id"
+$clientId = az identity show --ids $o.ResourceId --query "clientId" | ConvertFrom-Json
 
 az role assignment create --assignee $clientId --role "Storage Table Data Contributor" --scope $db.ResourceId
 if ($LastExitCode -ne 0) {        
