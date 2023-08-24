@@ -87,7 +87,7 @@ To run performance tests, you can review the code at Eklee.ShortUrl.LoadTester. 
 
 Run the following:
 
-```
+```bash
 dotnet run --launch-profile Eklee.ShortUrl.LoadTester
 ```
 
@@ -101,24 +101,31 @@ To use ASM, please follow the steps:
 
 1. Clone Utility and follow the steps in the az-solution-manager-utils repo to setup ASM.
 
-```
+```bash
 git clone https://github.com/seekdavidlee/az-solution-manager-utils.git
 ```
 
 2. Load Utility and apply manifest. Run each of the steps below.
 
-```
-# Pass in dev or prod
-$environmentName = "dev" 
-
-# Login
+```powershell
+# Login and set Azure Subscription. This is a one-time step so if you have done this already, it is optional.
 az login --tenant <TENANT ID>
 az account set -s <SUBSCRIPTION ID>
 
+# Pass in dev or prod
+$environmentName = "dev" 
+
 # Load utility script
 Push-Location ..\az-solution-manager-utils\; .\LoadASMToSession.ps1; Pop-Location
+
+# Get information related to your Azure Subscription
 $a = az account show | ConvertFrom-Json
+
+# Run solution setup
 Invoke-ASMSetup -DIRECTORY database -TENANT $a.tenantId -SUBSCRIPTION $a.Id -ENVIRONMENT $environmentName -COMPONENT database
 Invoke-ASMSetup -DIRECTORY deployment -TENANT $a.tenantId -SUBSCRIPTION $a.Id -ENVIRONMENT $environmentName -COMPONENT app
 Set-ASMGitHubDeploymentToResourceGroup -SOLUTIONID "shorturl" -ENVIRONMENT $environmentName -TENANT $a.tenantId -SUBSCRIPTION $a.Id
+
+# You can now verify if your solution with asm solution list command which will list all the solutions including the one you just created. This step is optional.
+asm solution list -s $a.id -t $a.tenantId
 ```

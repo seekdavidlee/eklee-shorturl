@@ -63,7 +63,7 @@ if ($LastExitCode -ne 0) {
 $obj = $json | ConvertFrom-Json
 $groupName = $obj.Name
 "resourceGroupName=$groupName" >> $env:GITHUB_OUTPUT
-"prefix=vs" >> $env:GITHUB_OUTPUT
+"prefix=su" >> $env:GITHUB_OUTPUT
 
 GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-database' -OutputKey "appStorageName" -ThrowIfMissing
 GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-apm' -OutputKey "appInsightsName"
