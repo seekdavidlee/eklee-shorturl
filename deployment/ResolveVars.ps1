@@ -32,7 +32,7 @@ function GetResourceAndSetInOutput {
     if (!$json) {
 
         if ($ThrowIfMissing) {
-            throw "Value for $OutputKey is missing!"
+            throw "Value for $OutputKey is missing! Inputs: [$ResourceId, $SolutionId, $EnvName]"
         }
         return
     }
