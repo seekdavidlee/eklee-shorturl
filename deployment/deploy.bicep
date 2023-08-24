@@ -77,6 +77,30 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
           value: appinsights.properties.InstrumentationKey
         }
         {
+          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING__accountName'
+          value: str.name
+        }
+        {
+          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING__clientId'
+          value: appid.properties.clientId
+        }
+        {
+          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING__credential'
+          value: 'managedidentity'
+        }
+        {
+          name: 'AzureWebJobsDashboard__accountName'
+          value: str.name
+        }
+        {
+          name: 'AzureWebJobsDashboard__clientId'
+          value: appid.properties.clientId
+        }
+        {
+          name: 'AzureWebJobsDashboard__credential'
+          value: 'managedidentity'
+        }               
+        {
           name: 'AzureWebJobsStorage__accountName'
           value: str.name
         }
