@@ -45,11 +45,9 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
-      - id: resolve-shared-resources
-        name: Resolve shared resources
-        working-directory: .\deployment
-        run: |
-          .\ResolveVars.ps1 -BUILD_ENV ${{ needs.setup.outputs.build_env }}
+      - id: resolve-vars
+        name: Resolve variables
+        run: .\deployment\ResolveVars.ps1 -BUILD_ENV ${{ needs.setup.outputs.build_env }}
 
       - name: Build azure environment
         id: build_az_env
