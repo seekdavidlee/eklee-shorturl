@@ -129,3 +129,13 @@ Set-ASMGitHubDeploymentToResourceGroup -SOLUTIONID "shorturl" -ENVIRONMENT $envi
 # You can now verify if your solution with asm solution list command which will list all the solutions including the one you just created. This step is optional.
 asm solution list -s $a.id -t $a.tenantId
 ```
+
+When deployment is completed, you will need to assign roles to the managed identity.
+
+```powershell
+
+# Pass in dev or prod
+$environmentName = "dev" 
+
+.\PostDeploymentSetup.ps1 -ENVIRONMENT $environmentName
+```
