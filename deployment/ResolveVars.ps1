@@ -65,11 +65,12 @@ $groupName = $obj.Name
 "resourceGroupName=$groupName" >> $env:GITHUB_OUTPUT
 "prefix=su" >> $env:GITHUB_OUTPUT
 
-GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-database' -OutputKey "appStorageName" -ThrowIfMissing
+GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-database' -OutputKey "appDatabaseName" -ThrowIfMissing
 GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-apm' -OutputKey "appInsightsName"
 GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-svcplan' -OutputKey "appPlanName"
 GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-svc' -OutputKey "appName"
 GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-id' -OutputKey "appId"
+GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-func-store' -OutputKey "appStorageName"
 
 $appConfig = GetResource -solutionId "shared-services" -environmentName "prod" -resourceId "shared-app-configuration"
 

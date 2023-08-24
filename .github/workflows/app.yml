@@ -63,6 +63,7 @@ jobs:
             appPlanName=${{ steps.resolve-vars.outputs.appPlanName }}
             appName=${{ steps.resolve-vars.outputs.appName }}
             appStorageName=${{ steps.resolve-vars.outputs.appStorageName }}
+            appDatabaseName=${{ steps.resolve-vars.outputs.appDatabaseName }}
             appId=${{ steps.resolve-vars.outputs.appId }}
             apiKey=${{ steps.resolve-vars.outputs.apiKey }}
             allowedIPList=${{ steps.resolve-vars.outputs.allowedIPList }}

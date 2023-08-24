@@ -3,6 +3,7 @@ param appInsightsName string = ''
 param appPlanName string = ''
 param appName string = ''
 param appStorageName string = ''
+param appDatabaseName string = ''
 param appId string = ''
 param location string = resourceGroup().location
 @secure()
@@ -14,6 +15,7 @@ var appPlanNameStr = empty(appPlanName) ? '${prefix}${uniqueString(resourceGroup
 var appNameStr = empty(appName) ? '${prefix}${uniqueString(resourceGroup().name)}' : appName
 var appIdStr = empty(appId) ? '${prefix}${uniqueString(resourceGroup().name)}' : appId
 var appStorageNameStr = empty(appStorageName) ? '${prefix}${uniqueString(resourceGroup().name)}' : appStorageName
+var appDatabaseNameStr = empty(appDatabaseName) ? '${prefix}${uniqueString(resourceGroup().name)}' : appDatabaseName
 
 resource appinsights 'Microsoft.Insights/components@2020-02-02' = {
   name: appInsightsNameStr
@@ -77,6 +79,10 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
         {
           name: 'AzureWebJobsStorage__accountName'
           value: str.name
+        }
+        {
+          name: 'UrlStorageConnection__tableServiceUri'
+          value: 'https://${appDatabaseNameStr}.table.${environment().suffixes.storage}/'
         }
         {
           name: 'UrlStorageConnection__credential'
