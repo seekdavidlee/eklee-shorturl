@@ -81,6 +81,10 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
           value: str.name
         }
         {
+          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING__accountName'
+          value: str.name
+        }
+        {
           name: 'UrlStorageConnection__tableServiceUri'
           value: 'https://${appDatabaseNameStr}.table.${environment().suffixes.storage}/'
         }
