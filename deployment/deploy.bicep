@@ -77,7 +77,7 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
           value: appinsights.properties.InstrumentationKey
         }
         {
-          name: 'AzureWebJobsDashboard__accountName'
+          name: 'AzureWebJobsStorage__accountName'
           value: str.name
         }
         {
