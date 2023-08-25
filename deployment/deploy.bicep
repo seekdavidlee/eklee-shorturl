@@ -85,6 +85,10 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
           value: 'DefaultEndpointsProtocol=https;AccountName=${str.name};AccountKey=${str.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
         }
         {
+          name: 'WEBSITE_CONTENTSHARE'
+          value: 'share'
+        }
+        {
           name: 'UrlStorageConnection__tableServiceUri'
           value: 'https://${appDatabaseNameStr}.table.${environment().suffixes.storage}/'
         }
