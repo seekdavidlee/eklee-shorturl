@@ -10,6 +10,8 @@ param location string = resourceGroup().location
 @secure()
 param apiKey string
 param allowedIPList string
+param sharedKeyVaultName string
+param appStorageConn string
 
 var appInsightsNameStr = empty(appInsightsName) ? '${prefix}${uniqueString(resourceGroup().name)}' : appInsightsName
 var appPlanNameStr = empty(appPlanName) ? '${prefix}${uniqueString(resourceGroup().name)}' : appPlanName
@@ -85,6 +87,14 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
           name: 'AzureWebJobsStorage__clientId'
           value: appClientId
         }
+        {
+          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
+          value: '@Microsoft.KeyVault(VaultName=${sharedKeyVaultName};SecretName=${appStorageConn})'
+        }
+        {
+          name: 'WEBSITE_CONTENTSHARE'
+          value: 'share'
+        }        
         {
           name: 'UrlStorageConnection__tableServiceUri'
           value: 'https://${appDatabaseNameStr}.table.${environment().suffixes.storage}/'
