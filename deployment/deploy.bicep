@@ -61,6 +61,7 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
     }
   }
   properties: {
+    keyVaultReferenceIdentity: appId
     httpsOnly: true
     serverFarmId: funcappplan.id
     clientAffinityEnabled: true
