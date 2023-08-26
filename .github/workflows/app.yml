@@ -75,9 +75,7 @@ jobs:
         name: Deploy code
         run: |
           .\Deployment\Deploy.ps1 -ResourceGroupName ${{ steps.resolve-vars.outputs.resourceGroupName }} `
-          -AppName ${{ steps.build_az_env.outputs.funcName }} `
-          -SharedKeyVaultName ${{ steps.resolve-vars.outputs.sharedKeyVaultName }} `
-          -AppStorageConn ${{ steps.resolve-vars.outputs.appStorageConn }}
+            -AppName ${{ steps.build_az_env.outputs.funcName }}
 
       - name: Enable Smoke test flag
         run: |

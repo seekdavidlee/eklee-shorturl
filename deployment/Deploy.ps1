@@ -1,17 +1,6 @@
-param($ResourceGroupName, $AppName, $SharedKeyVaultName, $AppStorageConn)
+param($ResourceGroupName, $AppName)
 
 $ErrorActionPreference = "Stop"
-
-az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings `
-    "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING=@Microsoft.KeyVault(VaultName=$SharedKeyVaultName;SecretName=$AppStorageConn)"
-if ($LastExitCode -ne 0) {
-    throw "Error with setting 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'."
-}
-
-az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "WEBSITE_CONTENTSHARE=share"
-if ($LastExitCode -ne 0) {
-    throw "Error with setting 'WEBSITE_CONTENTSHARE'."
-}
 
 dotnet publish Eklee.ShortUrl\Eklee.ShortUrl.csproj -c Release -o out
 

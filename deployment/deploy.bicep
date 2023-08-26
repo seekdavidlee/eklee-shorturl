@@ -43,6 +43,16 @@ resource str 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   }
 }
 
+resource strfile 'Microsoft.Storage/storageAccounts/fileServices@2023-01-01' = {
+  name: 'default'
+  parent: str
+}
+
+resource strfilecontent 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-01-01' = {
+  name: 'azurefileshare'
+  parent: strfile
+}
+
 resource funcappplan 'Microsoft.Web/serverfarms@2022-09-01' = {
   name: appPlanNameStr
   location: location
@@ -92,9 +102,13 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
           value: '@Microsoft.KeyVault(VaultName=${sharedKeyVaultName};SecretName=${appStorageConn})'
         }
         {
+          name: 'WEBSITE_SKIP_CONTENTSHARE_VALIDATION'
+          value: '1'
+        }
+        {
           name: 'WEBSITE_CONTENTSHARE'
-          value: 'share'
-        }        
+          value: 'azurefileshare'
+        }
         {
           name: 'UrlStorageConnection__tableServiceUri'
           value: 'https://${appDatabaseNameStr}.table.${environment().suffixes.storage}/'
