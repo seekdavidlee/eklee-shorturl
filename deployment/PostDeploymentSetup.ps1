@@ -39,25 +39,10 @@ if ($LastExitCode -ne 0) {
     throw "Unable to set '$secretName'."
 }
 
-$o = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-svc"
+$o = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-id"
 $clientId = (az resource show --ids $o.ResourceId --query "identity" | ConvertFrom-Json).principalId
 
 az role assignment create --assignee $clientId --role "Storage Blob Data Owner" --scope $func.ResourceId
 if ($LastExitCode -ne 0) {        
     throw "Unable to assign 'Storage Blob Data Owner'."
-}
-
-az role assignment create --assignee $clientId --role "Key Vault Secrets User" --scope $kv.ResourceId
-if ($LastExitCode -ne 0) {
-    Pop-Location
-    throw "Unable to assign 'Key Vault Secrets User' role."
-}
-
-$db = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-database"
-$o = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-id"
-$clientId = az identity show --ids $o.ResourceId --query "clientId" | ConvertFrom-Json
-
-az role assignment create --assignee $clientId --role "Storage Table Data Contributor" --scope $db.ResourceId
-if ($LastExitCode -ne 0) {        
-    throw "Unable to assign 'Storage Table Data Contributor'."
 }

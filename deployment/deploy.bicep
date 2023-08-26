@@ -2,9 +2,10 @@ param prefix string = ''
 param appInsightsName string = ''
 param appPlanName string = ''
 param appName string = ''
+param appId string = ''
+param appClientId string = ''
 param appStorageName string = ''
 param appDatabaseName string = ''
-param appId string = ''
 param location string = resourceGroup().location
 @secure()
 param apiKey string
@@ -15,7 +16,7 @@ param appStorageConn string
 var appInsightsNameStr = empty(appInsightsName) ? '${prefix}${uniqueString(resourceGroup().name)}' : appInsightsName
 var appPlanNameStr = empty(appPlanName) ? '${prefix}${uniqueString(resourceGroup().name)}' : appPlanName
 var appNameStr = empty(appName) ? '${prefix}${uniqueString(resourceGroup().name)}' : appName
-var appIdStr = empty(appId) ? '${prefix}${uniqueString(resourceGroup().name)}' : appId
+
 var appStorageNameStr = empty(appStorageName) ? '${prefix}${uniqueString(resourceGroup().name)}' : appStorageName
 var appDatabaseNameStr = empty(appDatabaseName) ? '${prefix}${uniqueString(resourceGroup().name)}' : appDatabaseName
 
@@ -51,19 +52,14 @@ resource funcappplan 'Microsoft.Web/serverfarms@2022-09-01' = {
   }
 }
 
-resource appid 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: appIdStr
-  location: location
-}
-
 resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
   name: appNameStr
   location: location
   kind: 'functionapp'
   identity: {
-    type: 'SystemAssigned, UserAssigned'
+    type: 'UserAssigned'
     userAssignedIdentities: {
-      '${appid.id}': {}
+      '${appId}': {}
     }
   }
   properties: {
@@ -88,7 +84,7 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
         }
         {
           name: 'AzureWebJobsStorage__clientId'
-          value: appid.properties.clientId
+          value: appClientId
         }           
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
@@ -108,7 +104,7 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
         }
         {
           name: 'UrlStorageConnection__clientId'
-          value: appid.properties.clientId
+          value: appClientId
         }
         {
           name: 'API_KEY'

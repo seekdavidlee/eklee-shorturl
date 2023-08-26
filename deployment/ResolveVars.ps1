@@ -52,7 +52,7 @@ function GetResourceAndSetInOutput {
 
     "$OutputKey=$objValue" >> $env:GITHUB_OUTPUT
 
-    return
+    return $obj
 }
     
 $solutionId = "shorturl"
@@ -66,10 +66,14 @@ $groupName = $obj.Name
 "prefix=su" >> $env:GITHUB_OUTPUT
 
 GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-database' -OutputKey "appDatabaseName" -ThrowIfMissing
+
+$o = GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-id' -OutputKey "appId" -ThrowIfMissing
+$clientId = az identity show --ids $o.ResourceId --query "clientId" | ConvertFrom-Json
+"appClientId=$clientId" >> $env:GITHUB_OUTPUT
+
 GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-apm' -OutputKey "appInsightsName"
 GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-svcplan' -OutputKey "appPlanName"
 GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-svc' -OutputKey "appName"
-GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-id' -OutputKey "appId"
 GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-func-store' -OutputKey "appStorageName"
 
 $appConfig = GetResource -solutionId "shared-services" -environmentName "prod" -resourceId "shared-app-configuration"

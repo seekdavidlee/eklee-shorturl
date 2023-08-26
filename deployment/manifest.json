@@ -17,10 +17,6 @@
             {
                 "asm-resource-id": "app-svc",
                 "resource-type": "Microsoft.Web/sites"
-            },
-            {
-                "asm-resource-id": "app-id",
-                "resource-type": "Microsoft.ManagedIdentity/userAssignedIdentities"
             }
         ]
     },

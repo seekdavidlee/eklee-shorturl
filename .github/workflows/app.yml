@@ -65,6 +65,7 @@ jobs:
             appStorageName=${{ steps.resolve-vars.outputs.appStorageName }}
             appDatabaseName=${{ steps.resolve-vars.outputs.appDatabaseName }}
             appId=${{ steps.resolve-vars.outputs.appId }}
+            appClientId=${{ steps.resolve-vars.outputs.appClientId }}
             apiKey=${{ steps.resolve-vars.outputs.apiKey }}
             allowedIPList=${{ steps.resolve-vars.outputs.allowedIPList }}
             sharedKeyVaultName=${{ steps.resolve-vars.outputs.sharedKeyVaultName }}

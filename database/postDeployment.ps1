@@ -44,3 +44,20 @@ if ($LastExitCode -ne 0) {
     Pop-Location
     throw "Unable to set shorturlapikey (prod)"
 }
+
+$solutionId = "shorturl"
+$db = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-database"
+$o = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-id"
+$clientId = az identity show --ids $o.ResourceId --query "clientId" | ConvertFrom-Json
+
+az role assignment create --assignee $clientId --role "Storage Table Data Contributor" --scope $db.ResourceId
+if ($LastExitCode -ne 0) {        
+    throw "Unable to assign 'Storage Table Data Contributor'."
+}
+
+$kv = GetResource -solutionId "shared-services" -environmentName "prod" -resourceId "shared-key-vault"
+az role assignment create --assignee $clientId --role "Key Vault Secrets User" --scope $kv.ResourceId
+if ($LastExitCode -ne 0) {
+    Pop-Location
+    throw "Unable to assign 'Key Vault Secrets User' role."
+}
