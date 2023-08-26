@@ -40,7 +40,7 @@ if ($LastExitCode -ne 0) {
 }
 
 $o = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-id"
-$clientId = (az resource show --ids $o.ResourceId --query "identity" | ConvertFrom-Json).principalId
+$clientId = (az resource show --ids $o.ResourceId --query "properties" | ConvertFrom-Json).principalId
 
 az role assignment create --assignee $clientId --role "Storage Blob Data Owner" --scope $func.ResourceId
 if ($LastExitCode -ne 0) {        
