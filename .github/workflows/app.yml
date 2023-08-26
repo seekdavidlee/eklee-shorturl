@@ -67,6 +67,8 @@ jobs:
             appId=${{ steps.resolve-vars.outputs.appId }}
             apiKey=${{ steps.resolve-vars.outputs.apiKey }}
             allowedIPList=${{ steps.resolve-vars.outputs.allowedIPList }}
+            sharedKeyVaultName=${{ steps.resolve-vars.outputs.sharedKeyVaultName }}
+            appStorageConn=${{ steps.resolve-vars.outputs.appStorageConn }}
 
       - id: deploy
         name: Deploy code

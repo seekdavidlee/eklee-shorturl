@@ -9,6 +9,8 @@ param location string = resourceGroup().location
 @secure()
 param apiKey string
 param allowedIPList string
+param sharedKeyVaultName string
+param appStorageConn string
 
 var appInsightsNameStr = empty(appInsightsName) ? '${prefix}${uniqueString(resourceGroup().name)}' : appInsightsName
 var appPlanNameStr = empty(appPlanName) ? '${prefix}${uniqueString(resourceGroup().name)}' : appPlanName
@@ -90,7 +92,7 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
         }           
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${str.name};AccountKey=${str.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
+          value: '@Microsoft.KeyVault(VaultName=${sharedKeyVaultName};SecretName=${appStorageConn})'
         }
         {
           name: 'WEBSITE_CONTENTSHARE'

@@ -88,4 +88,8 @@ if ($LastExitCode -ne 0) {
 }
 "apiKey=$apiKey" >> $env:GITHUB_OUTPUT
 
+GetResourceAndSetInOutput -SolutionId "shared-services" -EnvName "prod" -ResourceId "shared-key-vault" -OutputKey "sharedKeyVaultName" -ThrowIfMissing
+
+$secretName = "shorturl-func-app-store-$BUILD_ENV"
+"appStorageConn=$secretName" >> $env:GITHUB_OUTPUT
 
