@@ -2,6 +2,9 @@ param($ResourceGroupName, $AppName)
 
 $ErrorActionPreference = "Stop"
 
+az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING=@Microsoft.KeyVault(VaultName=$SharedKeyVaultName;SecretName=$AppStorageConn)"
+az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "WEBSITE_CONTENTSHARE=share"
+
 dotnet publish Eklee.ShortUrl\Eklee.ShortUrl.csproj -c Release -o out
 
 $zipFileName = "app.zip"

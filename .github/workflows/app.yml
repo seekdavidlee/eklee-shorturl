@@ -68,12 +68,14 @@ jobs:
             appClientId=${{ steps.resolve-vars.outputs.appClientId }}
             apiKey=${{ steps.resolve-vars.outputs.apiKey }}
             allowedIPList=${{ steps.resolve-vars.outputs.allowedIPList }}
-            sharedKeyVaultName=${{ steps.resolve-vars.outputs.sharedKeyVaultName }}
-            appStorageConn=${{ steps.resolve-vars.outputs.appStorageConn }}
 
       - id: deploy
         name: Deploy code
-        run: .\Deployment\Deploy.ps1 -ResourceGroupName ${{ steps.resolve-vars.outputs.resourceGroupName }} -AppName ${{ steps.build_az_env.outputs.funcName }}
+        run: |
+          .\Deployment\Deploy.ps1 -ResourceGroupName ${{ steps.resolve-vars.outputs.resourceGroupName }} `
+          -AppName ${{ steps.build_az_env.outputs.funcName }} `
+          -SharedKeyVaultName ${{ steps.resolve-vars.outputs.sharedKeyVaultName }} `
+          -AppStorageConn ${{ steps.resolve-vars.outputs.appStorageConn }}
 
       - name: Enable Smoke test flag
         run: |
