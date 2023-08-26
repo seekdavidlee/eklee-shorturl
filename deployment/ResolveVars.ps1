@@ -67,7 +67,7 @@ $groupName = $obj.Name
 
 GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-database' -OutputKey "appDatabaseName" -ThrowIfMissing
 
-$o = GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-id' -OutputKey "appId" -ThrowIfMissing
+$o = GetResourceAndSetInOutput -SolutionId $solutionId -EnvName $BUILD_ENV -ResourceId 'app-id' -OutputKey "appId" -UseId -ThrowIfMissing
 $clientId = az identity show --ids $o.ResourceId --query "clientId" | ConvertFrom-Json
 "appClientId=$clientId" >> $env:GITHUB_OUTPUT
 
