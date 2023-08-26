@@ -81,6 +81,14 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
           value: str.name
         }
         {
+          name: 'AzureWebJobsStorage__credential'
+          value: 'managedidentity'
+        }
+        {
+          name: 'AzureWebJobsStorage__clientId'
+          value: appid.properties.clientId
+        }           
+        {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
           value: 'DefaultEndpointsProtocol=https;AccountName=${str.name};AccountKey=${str.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
         }
