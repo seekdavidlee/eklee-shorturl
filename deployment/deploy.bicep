@@ -67,7 +67,7 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
   location: location
   kind: 'functionapp'
   identity: {
-    type: 'SystemAssigned, UserAssigned'
+    type: 'UserAssigned'
     userAssignedIdentities: {
       '${appId}': {}
     }
