@@ -72,21 +72,21 @@ jobs:
             appStorageConn=${{ steps.resolve-vars.outputs.appStorageConn }}            
 
       - id: deploy
-        if: ${{ steps.build_az_env.outputs.canDeployCode }}
+        if: ${{ steps.build_az_env.outputs.canDeployCode == 'true' }}
         name: Deploy code
         run: |
           .\Deployment\Deploy.ps1 -ResourceGroupName ${{ steps.resolve-vars.outputs.resourceGroupName }} `
             -AppName ${{ steps.build_az_env.outputs.funcName }}
 
       - name: Enable Smoke test flag
-        if: ${{ steps.build_az_env.outputs.canDeployCode }}
+        if: ${{ steps.build_az_env.outputs.canDeployCode == 'true' }}
         run: |
           $AppName = "${{ steps.build_az_env.outputs.funcName }}"
           $ResourceGroupName = "${{ steps.resolve-vars.outputs.resourceGroupName }}"
           az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=true" -o none
 
       - id: smoke-test
-        if: ${{ steps.build_az_env.outputs.canDeployCode }} 
+        if: ${{ steps.build_az_env.outputs.canDeployCode == 'true' }} 
         name: Run Smoke test
         run: |
           $unitTestFilePath = "${{ env.RUNNER_TEMP }}\TestResults\unittests.xml"
