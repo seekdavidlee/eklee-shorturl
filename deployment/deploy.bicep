@@ -78,7 +78,7 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
     serverFarmId: funcappplan.id
     clientAffinityEnabled: true
     siteConfig: {
-      functionAppScaleLimit: 2 // prevent unexpected cost
+      functionAppScaleLimit: 2 // prevent unexpected cost, DoS attack
       webSocketsEnabled: true
       appSettings: [
         {
@@ -99,7 +99,7 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: '@Microsoft.KeyVault(VaultName=${sharedKeyVaultName};SecretName=${appStorageConn})'
+          value: empty(appName) ? 'DefaultEndpointsProtocol=https;AccountName=${str.name};AccountKey=${str.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}' : '@Microsoft.KeyVault(VaultName=${sharedKeyVaultName};SecretName=${appStorageConn})'
         }
         {
           name: 'WEBSITE_SKIP_CONTENTSHARE_VALIDATION'

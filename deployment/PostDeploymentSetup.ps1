@@ -32,11 +32,25 @@ if ($LastExitCode -ne 0) {
     throw "Unable to list key from '$storageName'."
 }
 
-$storConnectionStr = "DefaultEndpointsProtocol=https;AccountName=$storageName;AccountKey=$key;EndpointSuffix=core.windows.net"
 $secretName = "shorturl-func-app-store-$ENVIRONMENT"
-az keyvault secret set --vault-name $kv.Name --name $secretName --value $storConnectionStr
-if ($LastExitCode -ne 0) {
-    throw "Unable to set '$secretName'."
+
+$skipUpdate = $false
+$secretVal = az keyvault secret show --vault-name $kv.Name --name $secretName --query "value" | ConvertFrom-Json
+if ($LastExitCode -eq 0) {
+    if ($secretVal.Contains(";AccountName=$storageName;")) {
+        $skipUpdate = $true
+    }
+}
+
+if (!$skipUpdate) {
+    $storConnectionStr = "DefaultEndpointsProtocol=https;AccountName=$storageName;AccountKey=$key;EndpointSuffix=core.windows.net"
+    az keyvault secret set --vault-name $kv.Name --name $secretName --value $storConnectionStr
+    if ($LastExitCode -ne 0) {
+        throw "Unable to set '$secretName'."
+    }
+}
+else {
+    Write-Host "Skip updating keyvault because value already exist."
 }
 
 $o = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-id"
@@ -45,4 +59,19 @@ $clientId = (az resource show --ids $o.ResourceId --query "properties" | Convert
 az role assignment create --assignee $clientId --role "Storage Blob Data Owner" --scope $func.ResourceId
 if ($LastExitCode -ne 0) {        
     throw "Unable to assign 'Storage Blob Data Owner'."
+}
+
+$func = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-svc"
+$a = (az functionapp config appsettings list --name $func.Name --resource-group $func.ResourceGroup | ConvertFrom-Json) | Where-Object { $_.name -eq "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING" }
+if ($LastExitCode -ne 0) {        
+    throw "Unable to list appsettings."
+}
+
+if (!$a.value.StartsWith("@Microsoft.KeyVault(")) {
+    $AppStorageConn = "shorturl-func-app-store-$ENVIRONMENT"
+    $SharedKeyVaultName = $kv.Name
+
+    az functionapp config appsettings set --name $func.Name `
+        --resource-group $func.ResourceGroup `
+        --settings "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING=@Microsoft.KeyVault(VaultName=$SharedKeyVaultName;SecretName=$AppStorageConn)"
 }
