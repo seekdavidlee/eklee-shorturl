@@ -155,3 +155,4 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
 }
 
 output funcName string = funcapp.name
+output canDeployCode bool = empty(appName)
