@@ -1,16 +1,8 @@
 param([Parameter(mandatory = $true)]$certName, [Parameter(mandatory = $true)]$email, [Parameter(mandatory = $true)]$buildEnv)
 
-$groups = az group list --tag stack-name=shorturl | ConvertFrom-Json
-if ($groups.Length -eq 0) {
-    throw "Please create group with the following tags: stack-name=shorturl"
-}
-else {
-    $resourceGroupName = $groups[0].name
-}
-
-$funcs = az functionapp list -g $groups.name | ConvertFrom-Json
-$func = $funcs | Where-Object { $_.tags.'stack-environment' -eq $buildEnv }
-$funcName = $func.name
+$func = asm lookup resource --asm-rid "app-svc" --asm-sol shorturl --asm-env $buildEnv --logging Info  | ConvertFrom-Json
+$funcName = $func.Name
+$resourceGroupName = $func.GroupName
 
 Push-Location (Get-PAServer).Folder
 
