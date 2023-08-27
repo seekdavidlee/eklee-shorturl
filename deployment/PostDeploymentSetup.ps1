@@ -33,24 +33,10 @@ if ($LastExitCode -ne 0) {
 }
 
 $secretName = "shorturl-func-app-store-$ENVIRONMENT"
-
-$skipUpdate = $false
-$secretVal = az keyvault secret show --vault-name $kv.Name --name $secretName --query "value" | ConvertFrom-Json
-if ($LastExitCode -eq 0) {
-    if ($secretVal.Contains(";AccountName=$storageName;")) {
-        $skipUpdate = $true
-    }
-}
-
-if (!$skipUpdate) {
-    $storConnectionStr = "DefaultEndpointsProtocol=https;AccountName=$storageName;AccountKey=$key;EndpointSuffix=core.windows.net"
-    az keyvault secret set --vault-name $kv.Name --name $secretName --value $storConnectionStr
-    if ($LastExitCode -ne 0) {
-        throw "Unable to set '$secretName'."
-    }
-}
-else {
-    Write-Host "Skip updating keyvault because value already exist."
+$storConnectionStr = "DefaultEndpointsProtocol=https;AccountName=$storageName;AccountKey=$key;EndpointSuffix=core.windows.net"
+az keyvault secret set --vault-name $kv.Name --name $secretName --value $storConnectionStr
+if ($LastExitCode -ne 0) {
+    throw "Unable to set '$secretName'."
 }
 
 $o = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-id"
@@ -60,25 +46,3 @@ az role assignment create --assignee $clientId --role "Storage Blob Data Owner" 
 if ($LastExitCode -ne 0) {        
     throw "Unable to assign 'Storage Blob Data Owner'."
 }
-
-# $func = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-svc"
-# $a = (az functionapp config appsettings list --name $func.Name --resource-group $func.GroupName | ConvertFrom-Json) | Where-Object { $_.name -eq "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING" }
-# if ($LastExitCode -ne 0) {        
-#     throw "Unable to list appsettings."
-# }
-
-# if (!$a.value.StartsWith("@Microsoft.KeyVault(")) {
-#     $AppStorageConn = "shorturl-func-app-store-$ENVIRONMENT"
-#     $SharedKeyVaultName = $kv.Name
-
-#     Set-Content -Path .\temp -Value "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING=@Microsoft.KeyVault(VaultName=$SharedKeyVaultName;SecretName=$AppStorageConn)"
-
-#     az functionapp config appsettings set --name $func.Name `
-#         --resource-group $func.GroupName `
-#         --settings "@temp"
-
-#     if ($LastExitCode -ne 0) {        
-#         throw "Unable to set appconfig."
-#     }
-#     Remove-Item .\temp -Force
-# }
