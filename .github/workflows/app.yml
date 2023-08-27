@@ -93,14 +93,14 @@ jobs:
           dotnet test -e X_URL=${{ env.base_url }} -e X_API_KEY=${{ steps.resolve-vars.outputs.apiKey }} --filter TestCategory=${{ needs.setup.outputs.build_env }} --logger "junit;LogFilePath=$unitTestFilePath"        
 
       - name: Disable Smoke test flag
-        if: ${{ success() || failure() }}
+        if: ${{ steps.build_az_env.outputs.canDeployCode == 'true' && (success() || failure()) }}
         run: |
           $AppName = "${{ steps.build_az_env.outputs.funcName }}"
           $ResourceGroupName = "${{ steps.resolve-vars.outputs.resourceGroupName }}"
           az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=false" -o none
 
       - name: Publish test results
-        if: ${{ success() || failure() }}
+        if: ${{ steps.build_az_env.outputs.canDeployCode == 'true'  && (success() || failure()) }}
         uses: EnricoMi/publish-unit-test-result-action/composite@v2
         with:
           files: ${{ env.RUNNER_TEMP }}/TestResults/*.xml
