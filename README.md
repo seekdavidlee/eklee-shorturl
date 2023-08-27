@@ -29,7 +29,6 @@ There will be a redirect from your URL to the URL as specified in your payload.
         3. AZURE_CREDENTIALS: This is the Azure credentials expressed in JSON format that contains the client id, client secret, subscription and AAD tenant id. Be sure to create a resource group with a tag of stack-name=shorturl as the CI/CD script will use this to lookup which resourcde group to create the Azure resources under. You should also ensure your service principal is assigned Contributor access to this resource group.
     2. Variables
         1. ALLOWEDIPLIST: This should be your home or office IP address. This prevents unauthorized access to sensitive operations to create/update or delete URL outside of your home or office.
-        2.  PREFIX: This is the name for your created Azure resource.
 4. Once you are ready, run the GitHub Action which will first build the Azure resources and then deploy the code.
 5. Once code is deployed, you should now create a create an SSL cert. You will need to own a custom domain name. I recommend using https://letsencrypt.org/ which is free and a PowerShell module https://poshac.me. With both you can use the script inside the ssl folder: UploadCertAndSetDomainName.ps1. Pass in the domain name and your email and follow the instructions to configure a TXT record.
 6. Once the TXT record is created, run ``` nslookup -q=TXT _acme-challenge.MYSUBDOMAINNAME.MYDOMAINNAME.com ``` to check if your TXT record is propogated before continuing in the script. The SSL cert will be uploaded to your Azure Function. 

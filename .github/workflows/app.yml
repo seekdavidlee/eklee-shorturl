@@ -84,6 +84,9 @@ jobs:
           $AppName = "${{ steps.build_az_env.outputs.funcName }}"
           $ResourceGroupName = "${{ steps.resolve-vars.outputs.resourceGroupName }}"
           az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=true" -o none
+          if ($LastExitCode -ne 0) {
+            throw "Error setting smoke test value ON!"
+          }
 
       - id: smoke-test
         if: ${{ steps.build_az_env.outputs.canDeployCode == 'true' }} 
@@ -98,6 +101,9 @@ jobs:
           $AppName = "${{ steps.build_az_env.outputs.funcName }}"
           $ResourceGroupName = "${{ steps.resolve-vars.outputs.resourceGroupName }}"
           az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=false" -o none
+          if ($LastExitCode -ne 0) {
+            throw "Error setting smoke test value OFF!"
+          }          
 
       - name: Publish test results
         if: ${{ steps.build_az_env.outputs.canDeployCode == 'true'  && (success() || failure()) }}
