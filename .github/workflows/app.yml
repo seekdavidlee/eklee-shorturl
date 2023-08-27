@@ -45,52 +45,68 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
 
-      - id: resolve-shared-resources
-        name: Resolve shared resources
-        working-directory: .\deployment
-        run: |
-          .\ResolveSharedResources.ps1
+      - id: resolve-vars
+        name: Resolve variables
+        run: .\deployment\ResolveVars.ps1 -BUILD_ENV ${{ needs.setup.outputs.build_env }}
 
       - name: Build azure environment
         id: build_az_env
         uses: azure/arm-deploy@v1
         with:
-          deploymentName: 'deploy-${{ needs.setup.outputs.build_env }}-${{ github.run_number }}'
-          resourceGroupName: ${{ env.appResourceGroup }}
+          deploymentName: '${{ needs.setup.outputs.build_env }}-${{ github.run_number }}'
+          resourceGroupName: ${{ steps.resolve-vars.outputs.resourceGroupName }}
           template: ./deployment/deploy.bicep
           failOnStdErr: false
           parameters: >
-            prefix=${{ vars.PREFIX }}
-            appEnvironment=${{ needs.setup.outputs.build_env }}            
-            urlStorageConnection=${{ secrets.URLSTORAGECONNECTION }}
-            apiKey=${{ secrets.APIKEY }}
-            allowedIPList=${{ vars.ALLOWEDIPLIST }}
+            prefix=${{ steps.resolve-vars.outputs.prefix }}
+            appInsightsName=${{ steps.resolve-vars.outputs.appInsightsName }}           
+            appPlanName=${{ steps.resolve-vars.outputs.appPlanName }}
+            appName=${{ steps.resolve-vars.outputs.appName }}
+            appStorageName=${{ steps.resolve-vars.outputs.appStorageName }}
+            appDatabaseName=${{ steps.resolve-vars.outputs.appDatabaseName }}
+            appId=${{ steps.resolve-vars.outputs.appId }}
+            appClientId=${{ steps.resolve-vars.outputs.appClientId }}
+            apiKey=${{ steps.resolve-vars.outputs.apiKey }}
+            allowedIPList=${{ steps.resolve-vars.outputs.allowedIPList }}
+            sharedKeyVaultName=${{ steps.resolve-vars.outputs.sharedKeyVaultName }}
+            appStorageConn=${{ steps.resolve-vars.outputs.appStorageConn }}            
 
       - id: deploy
+        if: ${{ steps.build_az_env.outputs.canDeployCode == 'true' }}
         name: Deploy code
-        run: .\Deployment\Deploy.ps1 -ResourceGroupName ${{ env.appResourceGroup }} -AppName ${{ steps.build_az_env.outputs.funcName }}
+        run: |
+          .\Deployment\Deploy.ps1 -ResourceGroupName ${{ steps.resolve-vars.outputs.resourceGroupName }} `
+            -AppName ${{ steps.build_az_env.outputs.funcName }}
 
       - name: Enable Smoke test flag
+        if: ${{ steps.build_az_env.outputs.canDeployCode == 'true' }}
         run: |
           $AppName = "${{ steps.build_az_env.outputs.funcName }}"
-          $ResourceGroupName = "${{ env.appResourceGroup }}"
+          $ResourceGroupName = "${{ steps.resolve-vars.outputs.resourceGroupName }}"
           az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=true" -o none
+          if ($LastExitCode -ne 0) {
+            throw "Error setting smoke test value ON!"
+          }
 
-      - id: smoke-test        
+      - id: smoke-test
+        if: ${{ steps.build_az_env.outputs.canDeployCode == 'true' }} 
         name: Run Smoke test
         run: |
           $unitTestFilePath = "${{ env.RUNNER_TEMP }}\TestResults\unittests.xml"
-          dotnet test -e X_URL=${{ env.base_url }} -e X_API_KEY=${{ secrets.APIKEY }} --filter TestCategory=${{ needs.setup.outputs.build_env }} --logger "junit;LogFilePath=$unitTestFilePath"        
+          dotnet test -e X_URL=${{ env.base_url }} -e X_API_KEY=${{ steps.resolve-vars.outputs.apiKey }} --filter TestCategory=${{ needs.setup.outputs.build_env }} --logger "junit;LogFilePath=$unitTestFilePath"        
 
       - name: Disable Smoke test flag
-        if: ${{ always() }}
+        if: ${{ steps.build_az_env.outputs.canDeployCode == 'true' && (success() || failure()) }}
         run: |
           $AppName = "${{ steps.build_az_env.outputs.funcName }}"
-          $ResourceGroupName = "${{ env.appResourceGroup }}"
+          $ResourceGroupName = "${{ steps.resolve-vars.outputs.resourceGroupName }}"
           az functionapp config appsettings set --name $AppName --resource-group $ResourceGroupName --settings "SMOKE_TEST=false" -o none
+          if ($LastExitCode -ne 0) {
+            throw "Error setting smoke test value OFF!"
+          }          
 
       - name: Publish test results
-        if: ${{ always() }}
+        if: ${{ steps.build_az_env.outputs.canDeployCode == 'true'  && (success() || failure()) }}
         uses: EnricoMi/publish-unit-test-result-action/composite@v2
         with:
           files: ${{ env.RUNNER_TEMP }}/TestResults/*.xml

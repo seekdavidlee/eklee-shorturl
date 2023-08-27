@@ -1,0 +1,9 @@
+{
+    "parameters": {
+        "storageName": "@asm-resource-id:app-datebase,@asm-resource-type:Microsoft.Storage/storageAccounts",
+        "appId": "@asm-resource-id:app-id,@asm-resource-type:Microsoft.ManagedIdentity/userAssignedIdentities"
+    },
+    "solutionId": "shorturl",
+    "environment": "@asm-environment",
+    "compressJsonOutput": true
+}
