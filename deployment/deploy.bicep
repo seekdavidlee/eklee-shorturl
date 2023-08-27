@@ -103,7 +103,7 @@ resource funcapp 'Microsoft.Web/sites@2022-09-01' = {
         }
         {
           name: 'WEBSITE_SKIP_CONTENTSHARE_VALIDATION'
-          value: '1'
+          value: empty(appName) ? '0' : '1'
         }
         {
           name: 'WEBSITE_CONTENTSHARE'

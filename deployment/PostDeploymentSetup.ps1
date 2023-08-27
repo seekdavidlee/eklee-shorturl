@@ -61,24 +61,24 @@ if ($LastExitCode -ne 0) {
     throw "Unable to assign 'Storage Blob Data Owner'."
 }
 
-$func = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-svc"
-$a = (az functionapp config appsettings list --name $func.Name --resource-group $func.GroupName | ConvertFrom-Json) | Where-Object { $_.name -eq "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING" }
-if ($LastExitCode -ne 0) {        
-    throw "Unable to list appsettings."
-}
+# $func = GetResource -solutionId $solutionId -environmentName $ENVIRONMENT -resourceId "app-svc"
+# $a = (az functionapp config appsettings list --name $func.Name --resource-group $func.GroupName | ConvertFrom-Json) | Where-Object { $_.name -eq "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING" }
+# if ($LastExitCode -ne 0) {        
+#     throw "Unable to list appsettings."
+# }
 
-if (!$a.value.StartsWith("@Microsoft.KeyVault(")) {
-    $AppStorageConn = "shorturl-func-app-store-$ENVIRONMENT"
-    $SharedKeyVaultName = $kv.Name
+# if (!$a.value.StartsWith("@Microsoft.KeyVault(")) {
+#     $AppStorageConn = "shorturl-func-app-store-$ENVIRONMENT"
+#     $SharedKeyVaultName = $kv.Name
 
-    Set-Content -Path .\temp -Value "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING=@Microsoft.KeyVault(VaultName=$SharedKeyVaultName;SecretName=$AppStorageConn)"
+#     Set-Content -Path .\temp -Value "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING=@Microsoft.KeyVault(VaultName=$SharedKeyVaultName;SecretName=$AppStorageConn)"
 
-    az functionapp config appsettings set --name $func.Name `
-        --resource-group $func.GroupName `
-        --settings "@temp"
+#     az functionapp config appsettings set --name $func.Name `
+#         --resource-group $func.GroupName `
+#         --settings "@temp"
 
-    if ($LastExitCode -ne 0) {        
-        throw "Unable to set appconfig."
-    }
-    Remove-Item .\temp -Force
-}
+#     if ($LastExitCode -ne 0) {        
+#         throw "Unable to set appconfig."
+#     }
+#     Remove-Item .\temp -Force
+# }
