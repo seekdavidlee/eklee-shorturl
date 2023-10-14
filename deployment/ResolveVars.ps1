@@ -3,7 +3,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-dotnet tool install --global azsolutionmanager --version 0.1.5-beta
+dotnet tool install --global azsolutionmanager --version 0.1.6-beta
 
 function GetResource {
     param (
